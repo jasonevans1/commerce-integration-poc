@@ -17,9 +17,15 @@ governing permissions and limitations under the License.
  * @returns transformed data object
  */
 function transformData(data) {
-  // @TODO Here transform the data as needed for 3rd party API
-  const transformedData = data;
-  return transformedData;
+  return {
+    customerId: data.id || null,
+    email: data.email,
+    fullName: `${data.firstname} ${data.lastname}`,
+    firstname: data.firstname,
+    lastname: data.lastname,
+    eventType: "updated",
+    timestamp: data.updated_at,
+  };
 }
 
 module.exports = {

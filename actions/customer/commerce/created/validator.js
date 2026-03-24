@@ -23,14 +23,34 @@ const { isOperationSuccessful } = require("../../../telemetry");
  * @returns the result of validation object
  */
 function validateData(data) {
-  // @TODO Here add the logic to validate the received data
-  // @TODO in case of error return { success: false, message: '<error message>' }
   const { currentSpan } = getInstrumentationHelpers();
   currentSpan.addEvent("created.phase", { value: "validateData" });
 
-  return {
-    success: true,
-  };
+  if (!data || typeof data !== "object") {
+    return { success: false, message: "Customer data is required" };
+  }
+
+  if (!data.email || typeof data.email !== "string" || !data.email.trim()) {
+    return { success: false, message: "Customer email is required" };
+  }
+
+  if (
+    !data.firstname ||
+    typeof data.firstname !== "string" ||
+    !data.firstname.trim()
+  ) {
+    return { success: false, message: "Customer firstname is required" };
+  }
+
+  if (
+    !data.lastname ||
+    typeof data.lastname !== "string" ||
+    !data.lastname.trim()
+  ) {
+    return { success: false, message: "Customer lastname is required" };
+  }
+
+  return { success: true };
 }
 
 module.exports = {

@@ -18,14 +18,17 @@ governing permissions and limitations under the License.
  * @param {object} preProcessed - result of the pre-process logic if any
  * @returns the sending result if needed for post process
  */
-function sendData(params, data, preProcessed) {
-  // @TODO Here add the logic to send the information to 3rd party
-  // @TODO Use params to retrieve need parameters from the environment
-  // @TODO in case of error return { success: false, statusCode: <error status code>, message: '<error message>' }
+async function sendData(params, data, preProcessed) {
+  const { Core } = require("@adobe/aio-sdk");
+  const logger = Core.Logger("customer-commerce-updated-sender", {
+    level: params.LOG_LEVEL || "info",
+  });
 
-  return {
-    success: true,
-  };
+  logger.info(
+    `Customer updated event received for ${data.fullName} (${data.email}) — no email sent`,
+  );
+
+  return { success: true };
 }
 
 module.exports = {

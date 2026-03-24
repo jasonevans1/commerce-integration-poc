@@ -43,6 +43,14 @@ async function main(params) {
   logger.debug(`Received params: ${stringParameters(params)}`);
 
   try {
+    // Commerce fires customer_save_commit_after twice during registration: once before
+    // the customer ID is assigned (mid-creation) and once after (post-save with ID).
+    // Skip the pre-save event to avoid sending duplicate welcome emails.
+    if (!params.data?.id) {
+      logger.info("No customer ID present — skipping pre-save event");
+      return actionSuccessResponse("Customer pre-save event skipped");
+    }
+
     logger.debug(`Validate data: ${JSON.stringify(params.data)}`);
     const validation = validateData(params.data);
     if (!validation.success) {

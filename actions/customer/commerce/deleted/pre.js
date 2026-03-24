@@ -17,7 +17,14 @@ governing permissions and limitations under the License.
  * @param {object} transformed - Transformed received data
  */
 function preProcess(data, transformed) {
-  // @TODO Here implement any preprocessing needed
+  const { Core } = require("@adobe/aio-sdk");
+  const logger = Core.Logger("customer-commerce-deleted-pre", {
+    level: "debug",
+  });
+
+  logger.debug(
+    `Pre-processing customer deleted event for customer ${transformed.customerId}`,
+  );
 }
 
 module.exports = {

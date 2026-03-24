@@ -22,9 +22,12 @@ const {
  * @param {object} transformed - Transformed received data
  */
 function preProcess(data, transformed) {
-  // @TODO Here implement any preprocessing needed
-  const { currentSpan } = getInstrumentationHelpers();
+  const { currentSpan, logger } = getInstrumentationHelpers();
   currentSpan.addEvent("created.phase", { value: "preProcess" });
+
+  logger.debug(
+    `Pre-processing customer created event for customer ${transformed.customerId}`,
+  );
 }
 
 module.exports = {

@@ -19,7 +19,14 @@ governing permissions and limitations under the License.
  * @param {object} result - result data from the sender
  */
 function postProcess(data, transformed, preProcessed, result) {
-  // @TODO Here implement any preprocessing needed
+  const { Core } = require("@adobe/aio-sdk");
+  const logger = Core.Logger("customer-commerce-deleted-post", {
+    level: "debug",
+  });
+
+  logger.info(
+    `Customer deleted event completed - ID: ${transformed.customerId}, type: ${transformed.eventType}, success: ${result.success}`,
+  );
 }
 
 module.exports = {

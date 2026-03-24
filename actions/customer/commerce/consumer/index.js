@@ -35,6 +35,7 @@ const {
 } = require("../../../constants");
 
 const Openwhisk = require("../../../openwhisk");
+const stateLib = require("@adobe/aio-lib-state");
 
 /**
  * This is the consumer of the events coming from Adobe Commerce related to customer entity.
@@ -48,6 +49,21 @@ async function main(params) {
   commerceCustomerMetrics.consumerTotalCounter.add(1);
 
   try {
+    // Idempotency check — Adobe I/O Events guarantees at-least-once delivery,
+    // so the same event_id can arrive more than once. Skip if already processed.
+    const eventId = params.event_id || params.eventid;
+    if (eventId) {
+      const state = await stateLib.init();
+      const stateKey = `processed-event-${eventId}`;
+      const alreadyProcessed = await state.get(stateKey);
+      if (alreadyProcessed) {
+        logger.info(`Duplicate event detected, skipping: ${eventId}`);
+        return successResponse(params.type, { success: true });
+      }
+      // Mark as processed with a 5-minute TTL — long enough to catch duplicates
+      await state.put(stateKey, "true", { ttl: 300 });
+    }
+
     const openwhiskClient = new Openwhisk(params.API_HOST, params.API_AUTH);
 
     let response = {};

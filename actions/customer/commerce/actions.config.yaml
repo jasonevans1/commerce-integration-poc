@@ -16,6 +16,9 @@ created:
   inputs:
     LOG_LEVEL: debug
     ENABLE_TELEMETRY: true
+    RESEND_API_KEY: $RESEND_API_KEY
+    NOTIFICATION_EMAIL_FROM: $NOTIFICATION_EMAIL_FROM
+    NOTIFICATION_EMAIL_TO: $NOTIFICATION_EMAIL_TO
   annotations:
     require-adobe-auth: true
     final: true
@@ -25,6 +28,9 @@ updated:
   runtime: nodejs:22
   inputs:
     LOG_LEVEL: debug
+    RESEND_API_KEY: $RESEND_API_KEY
+    NOTIFICATION_EMAIL_FROM: $NOTIFICATION_EMAIL_FROM
+    NOTIFICATION_EMAIL_TO: $NOTIFICATION_EMAIL_TO
   annotations:
     require-adobe-auth: true
     final: true
@@ -34,6 +40,23 @@ deleted:
   runtime: nodejs:22
   inputs:
     LOG_LEVEL: debug
+    RESEND_API_KEY: $RESEND_API_KEY
+    NOTIFICATION_EMAIL_FROM: $NOTIFICATION_EMAIL_FROM
+    NOTIFICATION_EMAIL_TO: $NOTIFICATION_EMAIL_TO
+  annotations:
+    require-adobe-auth: true
+    final: true
+forgot-password:
+  function: forgot-password/index.js
+  web: 'yes'
+  runtime: nodejs:22
+  inputs:
+    LOG_LEVEL: debug
+    ENABLE_TELEMETRY: true
+    RESEND_API_KEY: $RESEND_API_KEY
+    NOTIFICATION_EMAIL_FROM: $NOTIFICATION_EMAIL_FROM
+    NOTIFICATION_EMAIL_TO: $NOTIFICATION_EMAIL_TO
+    EDS_STOREFRONT_URL: $EDS_STOREFRONT_URL
   annotations:
     require-adobe-auth: true
     final: true

@@ -24,9 +24,12 @@ const {
  * @param {object} result - result data from the sender
  */
 function postProcess(data, transformed, preProcessed, result) {
-  // @TODO Here implement any preprocessing needed
-  const { currentSpan } = getInstrumentationHelpers();
+  const { currentSpan, logger } = getInstrumentationHelpers();
   currentSpan.addEvent("created.phase", { value: "postProcess" });
+
+  logger.info(
+    `Customer created event completed - ID: ${transformed.customerId}, type: ${transformed.eventType}, success: ${result.success}`,
+  );
 }
 
 module.exports = {

@@ -94,6 +94,26 @@
             "tax_class_id": "3"
           }
         }
+      },
+      "com.adobe.commerce.observer.customer_forgot_email_set_template_vars_before": {
+        "sampleEventTemplate": {
+          "transportObject": {
+            "customer": {
+              "id": 123,
+              "email": "john.doe@fakedomain.com",
+              "firstname": "John",
+              "lastname": "Doe",
+              "rp_token": "sample-reset-token",
+              "store_id": 1,
+              "website_id": 1
+            },
+            "store": {
+              "id": 1,
+              "code": "default",
+              "name": "Default Store View"
+            }
+          }
+        }
       }
     },
     "backoffice": {

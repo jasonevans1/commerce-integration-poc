@@ -25,15 +25,51 @@ const {
  * @returns the sending result if needed for post process
  */
 async function sendData(params, data, preProcessed) {
-  // @TODO Here add the logic to send the information to 3rd party
-  // @TODO Use params to retrieve needed parameters from the environment
-  // @TODO in case of error return { success: false, statusCode: <error status code>, message: '<error message>' }
-  const { currentSpan } = getInstrumentationHelpers();
+  const { currentSpan, logger } = getInstrumentationHelpers();
   currentSpan.addEvent("created.phase", { value: "sendData" });
 
-  return {
-    success: true,
-  };
+  logger.info(
+    `Sending customer created notification for ${data.fullName} (${data.email})`,
+  );
+  logger.debug(`Transformed payload: ${JSON.stringify(data)}`);
+
+  if (!(params.RESEND_API_KEY && params.NOTIFICATION_EMAIL_TO)) {
+    logger.info(
+      "Email notifications not configured (missing RESEND_API_KEY or NOTIFICATION_EMAIL_TO), skipping email send",
+    );
+    return { success: true };
+  }
+
+  try {
+    const got = require("got");
+    const response = await got.post("https://api.resend.com/emails", {
+      headers: {
+        Authorization: `Bearer ${params.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      json: {
+        from: params.NOTIFICATION_EMAIL_FROM || "onboarding@resend.dev",
+        to: [params.NOTIFICATION_EMAIL_TO],
+        subject: `New Customer Created: ${data.fullName}`,
+        html: `<h2>New Customer Created</h2>
+<p><strong>Customer ID:</strong> ${data.customerId}</p>
+<p><strong>Name:</strong> ${data.fullName}</p>
+<p><strong>Email:</strong> ${data.email}</p>
+<p><strong>Created At:</strong> ${data.timestamp}</p>`,
+      },
+      responseType: "json",
+    });
+
+    logger.info(`Email notification sent successfully: ${response.body.id}`);
+    return { success: true };
+  } catch (error) {
+    logger.error(`Failed to send email notification: ${error.message}`);
+    return {
+      success: false,
+      statusCode: 500,
+      message: `Email notification failed: ${error.message}`,
+    };
+  }
 }
 
 module.exports = {

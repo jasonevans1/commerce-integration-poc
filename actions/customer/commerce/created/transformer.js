@@ -22,12 +22,18 @@ const {
  * @returns transformed data object
  */
 function transformData(data) {
-  // @Todo Here transform the data as needed for external back-office application API
   const { currentSpan } = getInstrumentationHelpers();
   currentSpan.addEvent("created.phase", { value: "transformData" });
 
-  const transformedData = data;
-  return transformedData;
+  return {
+    customerId: data.id || null,
+    email: data.email,
+    fullName: `${data.firstname} ${data.lastname}`,
+    firstname: data.firstname,
+    lastname: data.lastname,
+    eventType: "created",
+    timestamp: data.created_at,
+  };
 }
 
 module.exports = {

@@ -17,12 +17,31 @@ governing permissions and limitations under the License.
  * @returns the result of validation object
  */
 function validateData(data) {
-  // @TODO Here add the logic to validate the received data
-  // @TODO in case of error return { success: false, message: '<error message>' }
+  if (!data || typeof data !== "object") {
+    return { success: false, message: "Customer data is required" };
+  }
 
-  return {
-    success: true,
-  };
+  if (!data.email || typeof data.email !== "string" || !data.email.trim()) {
+    return { success: false, message: "Customer email is required" };
+  }
+
+  if (
+    !data.firstname ||
+    typeof data.firstname !== "string" ||
+    !data.firstname.trim()
+  ) {
+    return { success: false, message: "Customer firstname is required" };
+  }
+
+  if (
+    !data.lastname ||
+    typeof data.lastname !== "string" ||
+    !data.lastname.trim()
+  ) {
+    return { success: false, message: "Customer lastname is required" };
+  }
+
+  return { success: true };
 }
 
 module.exports = {
