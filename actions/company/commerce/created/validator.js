@@ -19,8 +19,8 @@ function validateData(data) {
     return { success: false, message: "Company data is required" };
   }
 
-  if (!data.id) {
-    return { success: false, message: "Company id is required" };
+  if (!data.entity_id) {
+    return { success: false, message: "Company entity_id is required" };
   }
 
   if (

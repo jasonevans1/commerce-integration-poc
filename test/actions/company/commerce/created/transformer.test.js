@@ -16,12 +16,12 @@ const TEST_COMPANY_ID = 42;
 
 describe("Given company commerce created transformer", () => {
   const validData = {
-    id: TEST_COMPANY_ID,
+    entity_id: TEST_COMPANY_ID,
     company_name: "Acme Corp",
     company_email: "admin@acme.com",
   };
 
-  it("maps data.id to companyId", () => {
+  it("maps data.entity_id to companyId", () => {
     const result = transformer.transformData(validData);
     expect(result.companyId).toBe(TEST_COMPANY_ID);
   });
@@ -31,14 +31,22 @@ describe("Given company commerce created transformer", () => {
     expect(result.companyName).toBe("Acme Corp");
   });
 
-  it("maps data.company_email to customerName", () => {
+  it("uses company_admin firstname and lastname as customerName when present", () => {
+    const result = transformer.transformData({
+      ...validData,
+      company_admin: { firstname: "Tim", lastname: "Scott" },
+    });
+    expect(result.customerName).toBe("Tim Scott");
+  });
+
+  it("falls back to company_email when company_admin name is absent", () => {
     const result = transformer.transformData(validData);
     expect(result.customerName).toBe("admin@acme.com");
   });
 
-  it('defaults customerName to "Unknown Customer" when company_email is absent', () => {
+  it('defaults customerName to "Unknown Customer" when company_email and company_admin are absent', () => {
     const result = transformer.transformData({
-      id: TEST_COMPANY_ID,
+      entity_id: TEST_COMPANY_ID,
       company_name: "Acme",
     });
     expect(result.customerName).toBe("Unknown Customer");

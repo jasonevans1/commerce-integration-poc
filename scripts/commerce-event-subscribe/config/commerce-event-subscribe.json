@@ -141,5 +141,15 @@
         }
       ]
     }
+  },
+  {
+    "event": {
+      "name": "observer.company_save_commit_after",
+      "fields": [
+        {
+          "name": "*"
+        }
+      ]
+    }
   }
 ]

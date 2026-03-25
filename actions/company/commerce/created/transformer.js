@@ -13,10 +13,15 @@ function transformData(data) {
   const { currentSpan } = getInstrumentationHelpers();
   currentSpan.addEvent("created.phase", { value: "transformData" });
 
+  const adminName =
+    data.company_admin?.firstname && data.company_admin?.lastname
+      ? `${data.company_admin.firstname} ${data.company_admin.lastname}`
+      : data.company_email || "Unknown Customer";
+
   return {
-    companyId: data.id,
+    companyId: data.entity_id,
     companyName: data.company_name,
-    customerName: data.company_email || "Unknown Customer",
+    customerName: adminName,
     eventType: "created",
   };
 }

@@ -35,7 +35,7 @@ describe("Given company commerce created action", () => {
     sendData.mockResolvedValue({ success: true });
 
     const params = {
-      data: { id: 42, company_name: "Acme Corp" },
+      data: { entity_id: 42, company_name: "Acme Corp" },
       ENABLE_TELEMETRY: true,
     };
 
@@ -54,7 +54,7 @@ describe("Given company commerce created action", () => {
     validateData.mockReturnValue({ success: false, message: "Invalid data" });
 
     const params = {
-      data: { id: 42, company_name: "Acme Corp" },
+      data: { entity_id: 42, company_name: "Acme Corp" },
       ENABLE_TELEMETRY: true,
     };
 
@@ -78,7 +78,7 @@ describe("Given company commerce created action", () => {
     });
 
     const params = {
-      data: { id: 42, company_name: "Acme Corp" },
+      data: { entity_id: 42, company_name: "Acme Corp" },
       ENABLE_TELEMETRY: true,
     };
 

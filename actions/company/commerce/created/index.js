@@ -31,9 +31,9 @@ async function main(params) {
   logger.debug(`Received params: ${stringParameters(params)}`);
 
   try {
-    // Skip pre-save events that do not yet have a company ID assigned
-    if (!params.data?.id) {
-      logger.info("No company ID present — skipping pre-save event");
+    // Skip events that do not yet have a company entity_id assigned
+    if (!params.data?.entity_id) {
+      logger.info("No company entity_id present — skipping pre-save event");
       return actionSuccessResponse("Company pre-save event skipped");
     }
 
