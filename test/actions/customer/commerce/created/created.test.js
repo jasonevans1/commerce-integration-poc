@@ -34,7 +34,7 @@ describe("Given customer commerce created action", () => {
   describe("When invalid customer created event data is received", () => {
     test("Then returns action error response", async () => {
       const params = {
-        data: {},
+        data: { id: 1 },
         ENABLE_TELEMETRY: true,
       };
 
