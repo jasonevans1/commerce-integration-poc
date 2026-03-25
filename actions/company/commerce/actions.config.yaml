@@ -1,0 +1,26 @@
+consumer:
+  function: consumer/index.js
+  web: 'no'
+  runtime: nodejs:22
+  inputs:
+    LOG_LEVEL: debug
+    EVENT_PREFIX: $EVENT_PREFIX
+    ENABLE_TELEMETRY: true
+  annotations:
+    require-adobe-auth: true
+    final: true
+created:
+  function: created/index.js
+  web: 'no'
+  runtime: nodejs:22
+  inputs:
+    LOG_LEVEL: debug
+    ENABLE_TELEMETRY: true
+    RESEND_API_KEY: $RESEND_API_KEY
+    NOTIFICATION_EMAIL_FROM: $NOTIFICATION_EMAIL_FROM
+    NOTIFICATION_EMAIL_TO: $NOTIFICATION_EMAIL_TO
+    ADMIN_NAME: $ADMIN_NAME
+    COMMERCE_BASE_URL: $COMMERCE_BASE_URL
+  annotations:
+    require-adobe-auth: true
+    final: true

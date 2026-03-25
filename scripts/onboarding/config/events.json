@@ -290,5 +290,27 @@
         ]
       }
     }
+  },
+  "company": {
+    "commerce": {
+      "com.adobe.commerce.observer.company_save_commit_after": {
+        "sampleEventTemplate": {
+          "value": {
+            "id": 1,
+            "status": 0,
+            "company_name": "Acme Corp",
+            "company_email": "acme@example.com",
+            "legal_name": "Acme Corporation",
+            "country_id": "US",
+            "region": "California",
+            "postcode": "90210",
+            "telephone": "555-1234",
+            "customer_group_id": 1,
+            "super_user_id": 123,
+            "_isNew": true
+          }
+        }
+      }
+    }
   }
 }

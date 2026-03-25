@@ -40,6 +40,10 @@ application:
         license: Apache-2.0
         actions:
           $include: ./actions/customer/external/actions.config.yaml
+      company-commerce:
+        license: Apache-2.0
+        actions:
+          $include: ./actions/company/commerce/actions.config.yaml
       order-commerce:
         license: Apache-2.0
         actions:
