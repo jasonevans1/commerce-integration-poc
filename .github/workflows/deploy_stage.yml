@@ -57,6 +57,29 @@ jobs:
           AIO_PROJECT_WORKSPACE_ID: ${{ secrets.AIO_PROJECT_WORKSPACE_ID_STAGE }}
           AIO_PROJECT_WORKSPACE_NAME: ${{ secrets.AIO_PROJECT_WORKSPACE_NAME_STAGE }}
           AIO_PROJECT_WORKSPACE_DETAILS_SERVICES: ${{ secrets.AIO_PROJECT_WORKSPACE_DETAILS_SERVICES_STAGE }}
+          # App-specific vars — substituted into $VAR references in actions.config.yaml
+          COMMERCE_BASE_URL: ${{ secrets.COMMERCE_BASE_URL }}
+          COMMERCE_CONSUMER_KEY: ${{ secrets.COMMERCE_CONSUMER_KEY }}
+          COMMERCE_CONSUMER_SECRET: ${{ secrets.COMMERCE_CONSUMER_SECRET }}
+          COMMERCE_ACCESS_TOKEN: ${{ secrets.COMMERCE_ACCESS_TOKEN }}
+          COMMERCE_ACCESS_TOKEN_SECRET: ${{ secrets.COMMERCE_ACCESS_TOKEN_SECRET }}
+          COMMERCE_GRAPHQL_ENDPOINT: ${{ secrets.COMMERCE_GRAPHQL_ENDPOINT }}
+          EVENT_PREFIX: ${{ secrets.EVENT_PREFIX }}
+          IO_MANAGEMENT_BASE_URL: ${{ secrets.IO_MANAGEMENT_BASE_URL }}
+          IO_CONSUMER_ID: ${{ secrets.IO_CONSUMER_ID }}
+          IO_PROJECT_ID: ${{ secrets.IO_PROJECT_ID }}
+          IO_WORKSPACE_ID: ${{ secrets.IO_WORKSPACE_ID }}
+          OAUTH_CLIENT_ID: ${{ secrets.CLIENTID_STAGE }}
+          OAUTH_CLIENT_SECRET: ${{ secrets.CLIENTSECRET_STAGE }}
+          OAUTH_ORG_ID: ${{ secrets.IMSORGID_STAGE }}
+          OAUTH_SCOPES: ${{ secrets.SCOPES_STAGE }}
+          OAUTH_TECHNICAL_ACCOUNT_ID: ${{ secrets.TECHNICALACCID_STAGE }}
+          OAUTH_TECHNICAL_ACCOUNT_EMAIL: ${{ secrets.TECHNICALACCOUNTEMAIL_STAGE }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NOTIFICATION_EMAIL_FROM: ${{ secrets.NOTIFICATION_EMAIL_FROM }}
+          NOTIFICATION_EMAIL_TO: ${{ secrets.NOTIFICATION_EMAIL_TO }}
+          EDS_STOREFRONT_URL: ${{ secrets.EDS_STOREFRONT_URL }}
+          ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         uses: adobe/aio-apps-action@4.0.0
         with:
           command: deploy
