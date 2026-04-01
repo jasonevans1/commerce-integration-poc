@@ -260,6 +260,14 @@ All Task tool calls MUST be made in a SINGLE message to enable parallel executio
 
 {paste the COMPLETE content of <code-standards> verbatim — do NOT summarize}
 
+## Biome Linting Rules (always enforced — violations block commits)
+
+- **`noUnusedVariables`**: Unused `catch` bindings must use `_` prefix — write `catch (_error)`, not `catch (error)`.
+- **`noUnusedFunctionParameters`**: Unused parameters must use `_` prefix — write `function foo(_params)` for intentional pass-throughs.
+- **`useAwait`**: Every `async` function must contain at least one `await`. Return promises with `return await foo()`, not `return foo()`. Remove `async` if the function does not need it.
+- **`noMagicNumbers`**: Extract all numeric literals to named constants — in both implementation and test files. HTTP status codes (`const HTTP_OK = 200`), domain limits (`const MAX_PERCENTAGE = 100`), and expected values in test assertions (`expect(result.statusCode).toBe(HTTP_OK)`) must all use constants.
+- **`noEmptyBlockStatements`**: Empty blocks `{}` are not allowed. Add a clarifying comment: `{ // intentionally empty }` or `{ // empty generator — yields nothing }`.
+
 ## Your Task
 
 {contents of the task file}

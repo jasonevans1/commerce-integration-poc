@@ -62,6 +62,19 @@ For EACH unchecked requirement in order:
 - Make dependencies explicit
 - Minimize state and side effects
 
+**Biome Linting (apply during GREEN and REFACTOR):**
+
+These rules are enforced by the pre-commit hook — violations will block the commit:
+
+- **`noUnusedVariables`**: Unused `catch` bindings must be prefixed with `_`. Write `catch (_error)` not `catch (error)` when the error is not used.
+- **`noUnusedFunctionParameters`**: Unused function parameters must be prefixed with `_`. Write `function foo(_params)` not `function foo(params)` when the param is intentionally unused (e.g. pass-through validators).
+- **`useAwait`**: Every `async` function must contain at least one `await`. If you are returning a promise, `await` it explicitly — write `return await foo()` not `return foo()`. If a function does not need to be async, remove the `async` keyword.
+- **`noMagicNumbers`**: Numeric literals used in logic or assertions must be extracted to named constants. This applies to both implementation code AND test files. Examples:
+  - HTTP status codes: `const HTTP_OK = 200; const HTTP_BAD_REQUEST = 400;`
+  - Domain constants: `const MAX_PERCENTAGE = 100; const ROUNDING_FACTOR = 100;`
+  - Expected values in test assertions: `expect(result.statusCode).toBe(HTTP_OK)` not `.toBe(200)`
+- **`noEmptyBlockStatements`**: Empty function/generator bodies `{}` are not allowed. Add a comment to make intent explicit: `{ // intentionally empty }` or `{ // empty generator — yields nothing }`.
+
 **General:**
 
 - Follow the code standards provided in your prompt strictly
