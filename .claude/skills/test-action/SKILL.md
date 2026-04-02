@@ -33,8 +33,9 @@ aio app dev
 # GET (no body)
 ./scripts/test-action/invoke.sh <package/action> -m GET
 
-# Custom HTTP method
-./scripts/test-action/invoke.sh <package/action> -m DELETE -d '<json>'
+# DELETE with params — automatically converted to query string (App Builder does not parse DELETE bodies)
+./scripts/test-action/invoke.sh <package/action> -m DELETE -d '{"country":"US","region":"CA"}'
+# → https://localhost:9080/api/v1/web/<package/action>?country=US&region=CA
 
 # Against deployed environment instead of local
 ./scripts/test-action/invoke.sh <package/action> -e deployed -d '<json>'
@@ -121,4 +122,4 @@ Before generating commands, read the action's config and handler files to determ
 
 - Auth headers are always sent by the script; they're ignored for public (`require-adobe-auth: false`) actions
 - Local dev does NOT persist I/O State between `aio app dev` restarts
-- GET params should be passed as query strings: `-d` with GET method sends a body, which some actions may not parse — use query params for GET actions: append `?country=US&region=CA` to the URL by editing the script call or using `-m GET` with the URL directly via curl
+- **GET and DELETE methods**: App Builder does not parse JSON request bodies for these methods. The script automatically converts `-d '<json>'` to URL query parameters (e.g. `?country=US&region=CA`) when method is GET or DELETE

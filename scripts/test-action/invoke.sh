@@ -58,10 +58,10 @@ fi
 
 # --- Auth headers ---
 echo "Getting auth token..." >&2
-TOKEN=$(aio auth token 2>/dev/null) || { echo "Error: not logged in. Run 'aio login' first." >&2; exit 1; }
+TOKEN=$(aio auth login 2>/dev/null | tail -1) || { echo "Error: not logged in. Run 'aio auth login' first." >&2; exit 1; }
 
 echo "Getting org ID..." >&2
-ORG_NAME=$(aio where --json 2>/dev/null | grep -o '"name":"[^"]*"' | head -1 | cut -d'"' -f4)
+ORG_NAME=$(aio where --json 2>/dev/null | grep -o '"org":"[^"]*"' | head -1 | cut -d'"' -f4)
 if [[ -z "$ORG_NAME" ]]; then
   echo "Error: could not determine current org. Run 'aio where' to check your context." >&2
   exit 1
@@ -100,7 +100,15 @@ CURL_ARGS=(-sk -X "$METHOD")
 CURL_ARGS+=(-H "Authorization: Bearer $TOKEN")
 CURL_ARGS+=(-H "x-gw-ims-org-id: $ORG_ID")
 
-if [[ -n "$FILE" ]]; then
+# GET and DELETE: App Builder does not parse JSON bodies — convert to query string
+if [[ "$METHOD" == "GET" || "$METHOD" == "DELETE" ]] && [[ -n "$DATA" ]]; then
+  QUERY=$(python3 -c "
+import sys, json, urllib.parse
+d = json.loads(sys.argv[1])
+print(urllib.parse.urlencode(d))
+" "$DATA" 2>/dev/null)
+  [[ -n "$QUERY" ]] && URL="${URL}?${QUERY}"
+elif [[ -n "$FILE" ]]; then
   CURL_ARGS+=(-H "Content-Type: application/json")
   CURL_ARGS+=(--data-binary "@$FILE")
 elif [[ -n "$DATA" ]]; then
