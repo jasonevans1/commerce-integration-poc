@@ -31,7 +31,7 @@ METHOD="POST"
 DATA=""
 FILE=""
 ENV="local"
-LOCAL_HOST="https://localhost:9080"
+LOCAL_HOST="${LOCAL_HOST:-https://localhost:9080}"
 
 # --- Parse args ---
 ACTION=""
