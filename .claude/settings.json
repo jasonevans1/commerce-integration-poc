@@ -1,5 +1,8 @@
 {
   "env": {
     "ENABLE_TOOL_SEARCH": "true"
+  },
+  "enabledPlugins": {
+    "ralph-wiggum@claude-code-plugins": true
   }
 }

@@ -1,35 +1,70 @@
-/*
-Copyright 2022 Adobe. All rights reserved.
-This file is licensed to you under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License. You may obtain a copy
-of the License at http://www.apache.org/licenses/LICENSE-2.0
+const path = require("node:path");
 
-Unless required by applicable law or agreed to in writing, software distributed under
-the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
-OF ANY KIND, either express or implied. See the License for the specific language
-governing permissions and limitations under the License.
-*/
+const ROOT = path.resolve(__dirname, "..");
+
+const COVERAGE_BRANCHES = 65;
+const COVERAGE_FUNCTIONS = 50;
+const COVERAGE_LINES = 80;
+const COVERAGE_STATEMENTS = 80;
 
 module.exports = {
   collectCoverage: true,
   verbose: false,
   silent: true,
-  collectCoverageFrom: [
-    "../actions/**/*.js",
-    "../onboarding/**/*.js",
-    "../utils/**/*.js",
-  ],
-  coverageDirectory: "test-coverage",
+  coverageDirectory: path.join(__dirname, "test-coverage"),
   coverageReporters: ["text-summary", "html"],
-  coverageThreshold: {
-    global: {
-      branches: 65,
-      functions: 50,
-      lines: 80,
-      statements: 80,
-    },
-  },
   reporters: ["default"],
-  testEnvironment: "node",
-  setupFilesAfterEnv: ["./jest.setup.js"],
+  projects: [
+    {
+      displayName: "backend",
+      rootDir: ROOT,
+      testEnvironment: "node",
+      testMatch: ["<rootDir>/test/**/*.test.js"],
+      testPathIgnorePatterns: ["/node_modules/", "<rootDir>/test/web-src/"],
+      collectCoverageFrom: [
+        "<rootDir>/actions/**/*.js",
+        "<rootDir>/onboarding/**/*.js",
+        "<rootDir>/utils/**/*.js",
+      ],
+      coverageThreshold: {
+        global: {
+          branches: COVERAGE_BRANCHES,
+          functions: COVERAGE_FUNCTIONS,
+          lines: COVERAGE_LINES,
+          statements: COVERAGE_STATEMENTS,
+        },
+      },
+      setupFilesAfterEnv: ["<rootDir>/test/jest.setup.js"],
+    },
+    {
+      displayName: "frontend",
+      rootDir: ROOT,
+      testEnvironment: "jsdom",
+      testMatch: ["<rootDir>/test/web-src/**/*.test.{js,jsx}"],
+      moduleNameMapper: {
+        "^@adobe/react-spectrum$":
+          "<rootDir>/test/__mocks__/@adobe/react-spectrum.js",
+        "^@adobe/uix-guest$": "<rootDir>/test/__mocks__/@adobe/uix-guest.js",
+      },
+      transform: {
+        "^.+\\.[jt]sx?$": [
+          "babel-jest",
+          {
+            presets: [
+              ["@babel/preset-env", { targets: { node: "current" } }],
+              ["@babel/preset-react", { runtime: "automatic" }],
+            ],
+          },
+        ],
+      },
+      collectCoverageFrom: [
+        "<rootDir>/src/commerce-backend-ui-1/web-src/src/**/*.{js,jsx}",
+      ],
+      setupFiles: ["<rootDir>/test/jest.setup.frontend.js"],
+      setupFilesAfterEnv: [
+        "<rootDir>/test/jest.setup.js",
+        "@testing-library/jest-dom",
+      ],
+    },
+  ],
 };
