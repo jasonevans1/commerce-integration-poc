@@ -57,6 +57,20 @@
       }
     },
     {
+      // React components and contexts use PascalCase filenames by convention
+      "includes": [
+        "src/**/web-src/**/*.{js,jsx}",
+        "test/web-src/**/*.{js,jsx}"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "useFilenamingConvention": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["actions/**/*.js"],
       "linter": {
         "rules": {
