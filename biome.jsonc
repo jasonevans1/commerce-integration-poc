@@ -71,6 +71,16 @@
       }
     },
     {
+      // exc-runtime.js is verbatim minified third-party code from Adobe's sample — do not lint
+      "includes": ["src/commerce-backend-ui-1/web-src/src/exc-runtime.js"],
+      "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      }
+    },
+    {
       "includes": ["actions/**/*.js"],
       "linter": {
         "rules": {

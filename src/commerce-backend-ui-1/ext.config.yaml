@@ -2,11 +2,11 @@ operations:
   view:
     - type: web
       impl: index.html
-web:
-  src: web-src/
+actions: actions
+web: web-src
 runtimeManifest:
   packages:
-    commerce-backend-ui-1:
+    admin-ui-sdk:
       license: Apache-2.0
       actions:
         registration:

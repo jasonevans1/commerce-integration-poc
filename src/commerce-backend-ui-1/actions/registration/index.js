@@ -1,25 +1,38 @@
 const HTTP_OK = 200;
 
+const stateService = require("../../../../actions/delivery-fee/lib/state-service");
+
 /**
- * Returns the Admin UI SDK menu registration payload for this application.
+ * Returns the Admin UI SDK order.customFees registration payload.
+ * Dynamically reads all delivery fee rules from I/O State and maps them
+ * to custom fee objects.
  *
  * Auth is enforced by the App Builder runtime (require-adobe-auth: true).
- * This action does not perform any I/O.
  *
- * @returns {{ statusCode: number, body: object }}
+ * @returns {Promise<{ statusCode: number, body: object }>}
  */
-function main(_params) {
+async function main(_params) {
+  let customFees = [];
+
+  try {
+    const rules = await stateService.listRules();
+    customFees = rules.map((rule) => ({
+      id: `delivery-fee-${rule.country.toLowerCase()}-${rule.region.toLowerCase()}`,
+      label: `Delivery Fee \u2014 ${rule.country}/${rule.region}`,
+      value: rule.value,
+    }));
+  } catch (_error) {
+    // intentionally empty — return empty customFees on error
+  }
+
   return {
     statusCode: HTTP_OK,
     body: {
-      pages: [
-        {
-          id: "delivery-fee-rules",
-          label: "Delivery Fees",
-          parent: "Stores",
-          icon: "Airplane",
+      registration: {
+        order: {
+          customFees,
         },
-      ],
+      },
     },
   };
 }

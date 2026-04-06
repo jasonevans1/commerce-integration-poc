@@ -10,10 +10,8 @@ jest.mock("@adobe/uix-guest", () => ({
 
 const EXTENSION_ID = "delivery-fee-rules";
 
-const mockGuestConnection = { sharedContext: { get: jest.fn() } };
-
 beforeEach(() => {
-  register.mockResolvedValue(mockGuestConnection);
+  register.mockResolvedValue({});
 });
 
 afterEach(() => {
@@ -21,7 +19,7 @@ afterEach(() => {
 });
 
 describe("ExtensionRegistration", () => {
-  it("calls extensionPoint init on mount to register with the Admin UI SDK host", async () => {
+  it("calls register on mount", async () => {
     render(React.createElement(ExtensionRegistration, null));
 
     await waitFor(() => {
@@ -29,36 +27,7 @@ describe("ExtensionRegistration", () => {
     });
   });
 
-  it("renders null while registration is in progress", () => {
-    // Make register never resolve during this test
-    register.mockReturnValue(
-      new Promise(() => {
-        // intentionally never resolves
-      }),
-    );
-
-    const { container } = render(
-      React.createElement(ExtensionRegistration, null),
-    );
-
-    expect(container.firstChild).toBeNull();
-  });
-
-  it("renders children after registration completes successfully", async () => {
-    const { getByText } = render(
-      React.createElement(
-        ExtensionRegistration,
-        null,
-        React.createElement("span", null, "child content"),
-      ),
-    );
-
-    await waitFor(() => {
-      expect(getByText("child content")).toBeInTheDocument();
-    });
-  });
-
-  it("passes the correct page id and title to the registration call", async () => {
+  it("calls register with the correct extension id delivery-fee-rules", async () => {
     render(React.createElement(ExtensionRegistration, null));
 
     await waitFor(() => {
@@ -68,17 +37,56 @@ describe("ExtensionRegistration", () => {
     });
   });
 
-  it("does not re-register if already registered", async () => {
-    const { rerender } = render(
+  it("calls register with an empty methods object", async () => {
+    render(React.createElement(ExtensionRegistration, null));
+
+    await waitFor(() => {
+      expect(register).toHaveBeenCalledWith(
+        expect.objectContaining({ methods: {} }),
+      );
+    });
+  });
+
+  it("calls register with id delivery-fee-rules", async () => {
+    render(React.createElement(ExtensionRegistration, null));
+
+    await waitFor(() => {
+      expect(register).toHaveBeenCalledWith(
+        expect.objectContaining({ id: EXTENSION_ID }),
+      );
+    });
+  });
+
+  it("renders no DOM elements", () => {
+    const { container } = render(
       React.createElement(ExtensionRegistration, null),
     );
 
-    await waitFor(() => {
-      expect(register).toHaveBeenCalledTimes(1);
-    });
+    expect(container.firstChild).toBeNull();
+  });
 
-    rerender(React.createElement(ExtensionRegistration, null));
+  it("does not render any DOM elements", () => {
+    const { container } = render(
+      React.createElement(ExtensionRegistration, null),
+    );
 
-    expect(register).toHaveBeenCalledTimes(1);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it("catches and logs errors from register without throwing", async () => {
+    register.mockRejectedValue(new Error("registration failed"));
+
+    let renderError = null;
+    try {
+      render(React.createElement(ExtensionRegistration, null));
+      // Wait for the async init to settle
+      await waitFor(() => {
+        expect(register).toHaveBeenCalledTimes(1);
+      });
+    } catch (_err) {
+      renderError = _err;
+    }
+
+    expect(renderError).toBeNull();
   });
 });

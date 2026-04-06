@@ -28,4 +28,8 @@ const AlertDialog = ({
     React.createElement("button", { onClick: onCancel }, cancelLabel),
   );
 
-module.exports = { DialogContainer, AlertDialog };
+const Provider = ({ children }) => React.createElement("div", null, children);
+
+const lightTheme = {};
+
+module.exports = { DialogContainer, AlertDialog, Provider, lightTheme };
