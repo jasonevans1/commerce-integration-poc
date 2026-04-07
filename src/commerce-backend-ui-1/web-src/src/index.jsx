@@ -4,7 +4,7 @@ import "regenerator-runtime/runtime";
 import Runtime, { init } from "@adobe/exc-app";
 import { createRoot } from "react-dom/client";
 
-import App from "./components/App";
+import App from "./App";
 import "./index.css";
 
 window.React = require("react");
