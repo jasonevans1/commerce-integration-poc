@@ -221,8 +221,8 @@ describe("Admin UI Phase 2 Scaffolding", () => {
     expect(appJsx).not.toContain("DeleteConfirm");
   });
 
-  test("index.html contains a script tag with src pointing to ./src/index.jsx", () => {
-    expect(indexHtml).toContain('src="./src/index.jsx"');
+  test("index.html contains a script tag with src pointing to ../src/index.jsx", () => {
+    expect(indexHtml).toContain('src="../src/index.jsx"');
   });
 
   test("index.html contains the noscript fallback element", () => {
