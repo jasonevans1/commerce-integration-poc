@@ -17,7 +17,7 @@ async function main(_params) {
   try {
     const rules = await stateService.listRules();
     customFees = rules.map((rule) => ({
-      id: `delivery-fee-${rule.country.toLowerCase()}-${rule.region.toLowerCase()}`,
+      id: `delivery-fee-rules::${rule.country.toLowerCase()}-${rule.region.toLowerCase()}`,
       label: `Delivery Fee \u2014 ${rule.country}/${rule.region}`,
       value: rule.value,
     }));
@@ -33,7 +33,7 @@ async function main(_params) {
           customFees,
           massActions: [
             {
-              id: "hello-world",
+              actionId: "hello-world",
               label: "Hello World",
               path: "index.html#/hello-world",
             },

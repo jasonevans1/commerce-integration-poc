@@ -7,23 +7,22 @@ jest.mock(
   () => () => <div data-testid="ext-reg" />,
 );
 
+jest.mock(
+  "../../src/commerce-backend-ui-1/web-src/src/components/HelloWorldPanel",
+  () => () => <div data-testid="hello-world-panel" />,
+);
+
 const NO_BROWSER_ROUTER_PATTERN = /BrowserRouter/;
 const SOMETHING_WENT_WRONG_PATTERN = /Something went wrong/i;
 
 const mockRuntime = { on: jest.fn() };
 const mockIms = {};
 
+afterEach(() => {
+  window.location.hash = "";
+});
+
 describe("App", () => {
-  it("renders without crashing with mock runtime prop", () => {
-    render(<App ims={mockIms} runtime={mockRuntime} />);
-  });
-
-  it("uses HashRouter", () => {
-    const AppModule = require("../../src/commerce-backend-ui-1/web-src/src/App");
-    const AppSrc = AppModule.toString();
-    expect(AppSrc).not.toMatch(NO_BROWSER_ROUTER_PATTERN);
-  });
-
   it("renders without crashing given a mock runtime prop", () => {
     render(<App ims={mockIms} runtime={mockRuntime} />);
   });
@@ -56,6 +55,12 @@ describe("App", () => {
     const onFn = jest.fn();
     render(<App ims={mockIms} runtime={{ on: onFn }} />);
     expect(onFn).toHaveBeenCalledWith("history", expect.any(Function));
+  });
+
+  it("renders HelloWorldPanel at the /hello-world route", () => {
+    window.location.hash = "#/hello-world";
+    render(<App ims={mockIms} runtime={mockRuntime} />);
+    expect(screen.getByTestId("hello-world-panel")).toBeInTheDocument();
   });
 
   it("renders error fallback when a child component throws", () => {

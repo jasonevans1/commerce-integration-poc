@@ -47,24 +47,6 @@ describe("ExtensionRegistration", () => {
     });
   });
 
-  it("calls register with id delivery-fee-rules", async () => {
-    render(React.createElement(ExtensionRegistration, null));
-
-    await waitFor(() => {
-      expect(register).toHaveBeenCalledWith(
-        expect.objectContaining({ id: EXTENSION_ID }),
-      );
-    });
-  });
-
-  it("renders no DOM elements", () => {
-    const { container } = render(
-      React.createElement(ExtensionRegistration, null),
-    );
-
-    expect(container.firstChild).toBeNull();
-  });
-
   it("does not render any DOM elements", () => {
     const { container } = render(
       React.createElement(ExtensionRegistration, null),
