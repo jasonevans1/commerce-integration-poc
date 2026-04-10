@@ -31,6 +31,13 @@ async function main(_params) {
       registration: {
         order: {
           customFees,
+          massActions: [
+            {
+              id: "hello-world",
+              label: "Hello World",
+              path: "index.html#/hello-world",
+            },
+          ],
         },
       },
     },

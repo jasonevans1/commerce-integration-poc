@@ -29,13 +29,13 @@ describe("registration action", () => {
       require("../../../src/commerce-backend-ui-1/actions/registration/index").main;
   });
 
-  it("it returns 200 with registration.order.customFees array", async () => {
+  it("returns 200 with registration.order.customFees array", async () => {
     const result = await main({});
     expect(result.statusCode).toBe(HTTP_OK);
     expect(Array.isArray(result.body.registration.order.customFees)).toBe(true);
   });
 
-  it("it maps each rule to a customFee with id, label, and value", async () => {
+  it("maps each rule to a customFee with id, label, and value", async () => {
     stateService.listRules.mockResolvedValue([
       {
         country: "US",
@@ -52,7 +52,7 @@ describe("registration action", () => {
     expect(fee).toHaveProperty("value");
   });
 
-  it("it constructs the fee id as delivery-fee-{country}-{region} in lowercase", async () => {
+  it("constructs the fee id as delivery-fee-{country}-{region} in lowercase", async () => {
     stateService.listRules.mockResolvedValue([
       {
         country: "US",
@@ -68,7 +68,7 @@ describe("registration action", () => {
     );
   });
 
-  it("it constructs the fee label as Delivery Fee — {country}/{region}", async () => {
+  it("constructs the fee label as Delivery Fee — {country}/{region}", async () => {
     stateService.listRules.mockResolvedValue([
       {
         country: "US",
@@ -84,7 +84,7 @@ describe("registration action", () => {
     );
   });
 
-  it("it sets fee value from rule.value", async () => {
+  it("sets fee value from rule.value", async () => {
     stateService.listRules.mockResolvedValue([
       {
         country: "US",
@@ -100,15 +100,57 @@ describe("registration action", () => {
     );
   });
 
-  it("it returns empty customFees array when no rules exist in state", async () => {
+  it("returns empty customFees array when no rules exist in state", async () => {
     stateService.listRules.mockResolvedValue([]);
     const result = await main({});
     expect(result.body.registration.order.customFees).toEqual([]);
   });
 
-  it("it returns empty customFees array when state service throws", async () => {
+  it("returns empty customFees array when state service throws", async () => {
     stateService.listRules.mockRejectedValue(new Error("State unavailable"));
     const result = await main({});
     expect(result.body.registration.order.customFees).toEqual([]);
+  });
+
+  it("includes order.massActions in the registration response", async () => {
+    const result = await main({});
+    expect(result.body.registration.order).toHaveProperty("massActions");
+    expect(Array.isArray(result.body.registration.order.massActions)).toBe(
+      true,
+    );
+  });
+
+  it('returns a massAction with id "hello-world", label "Hello World", and path "index.html#/hello-world"', async () => {
+    const result = await main({});
+    const massActions = result.body.registration.order.massActions;
+    const EXPECTED_MASS_ACTION_COUNT = 1;
+    expect(massActions).toHaveLength(EXPECTED_MASS_ACTION_COUNT);
+    expect(massActions[0]).toEqual({
+      id: "hello-world",
+      label: "Hello World",
+      path: "index.html#/hello-world",
+    });
+  });
+
+  it("still returns order.customFees alongside the new massActions", async () => {
+    stateService.listRules.mockResolvedValue([
+      {
+        country: "US",
+        region: "CA",
+        name: "Fee",
+        type: "fixed",
+        value: MOCK_FEE_VALUE,
+      },
+    ]);
+    const result = await main({});
+    const order = result.body.registration.order;
+    expect(Array.isArray(order.customFees)).toBe(true);
+    expect(Array.isArray(order.massActions)).toBe(true);
+    const EXPECTED_CUSTOM_FEES_COUNT = 1;
+    expect(order.customFees).toHaveLength(EXPECTED_CUSTOM_FEES_COUNT);
+    expect(order.customFees[0].id).toBe("delivery-fee-us-ca");
+    const EXPECTED_MASS_ACTION_COUNT = 1;
+    expect(order.massActions).toHaveLength(EXPECTED_MASS_ACTION_COUNT);
+    expect(order.massActions[0].id).toBe("hello-world");
   });
 });

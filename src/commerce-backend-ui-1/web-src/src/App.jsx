@@ -3,6 +3,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { HashRouter, Route, Routes } from "react-router-dom";
 
 import ExtensionRegistration from "./components/ExtensionRegistration.jsx";
+import HelloWorldPanel from "./components/HelloWorldPanel.jsx";
 
 function App(props) {
   props.runtime.on("configuration", () => {
@@ -26,6 +27,7 @@ function App(props) {
               }
               index
             />
+            <Route element={<HelloWorldPanel />} path="/hello-world" />
           </Routes>
         </Provider>
       </HashRouter>
