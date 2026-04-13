@@ -156,6 +156,31 @@ describe("registration action", () => {
     }
   });
 
+  it("includes a page registration entry in the response body", async () => {
+    const result = await main({});
+    expect(result.body.registration).toHaveProperty("page");
+  });
+
+  it('sets the page title to "Custom Fees"', async () => {
+    const result = await main({});
+    expect(result.body.registration.page.title).toBe("Custom Fees");
+  });
+
+  it('sets the page href to "index.html#/custom-fees-config"', async () => {
+    const result = await main({});
+    expect(result.body.registration.page.href).toBe(
+      "index.html#/custom-fees-config",
+    );
+  });
+
+  it("it still returns order.customFees and order.massActions alongside the page registration", async () => {
+    const result = await main({});
+    const { registration } = result.body;
+    expect(registration).toHaveProperty("page");
+    expect(Array.isArray(registration.order.customFees)).toBe(true);
+    expect(Array.isArray(registration.order.massActions)).toBe(true);
+  });
+
   it("still returns order.customFees alongside the new massActions", async () => {
     stateService.listRules.mockResolvedValue([
       {

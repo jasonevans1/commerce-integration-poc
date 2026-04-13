@@ -12,6 +12,16 @@ jest.mock(
   () => () => <div data-testid="hello-world-panel" />,
 );
 
+jest.mock(
+  "../../src/commerce-backend-ui-1/web-src/src/components/CustomFeesConfig",
+  () =>
+    function CustomFeesConfig({ ims }) {
+      return (
+        <div data-ims={JSON.stringify(ims)} data-testid="custom-fees-config" />
+      );
+    },
+);
+
 const NO_BROWSER_ROUTER_PATTERN = /BrowserRouter/;
 const SOMETHING_WENT_WRONG_PATTERN = /Something went wrong/i;
 
@@ -61,6 +71,32 @@ describe("App", () => {
     window.location.hash = "#/hello-world";
     render(<App ims={mockIms} runtime={mockRuntime} />);
     expect(screen.getByTestId("hello-world-panel")).toBeInTheDocument();
+  });
+
+  it("renders CustomFeesConfig at the /custom-fees-config route", () => {
+    window.location.hash = "#/custom-fees-config";
+    render(<App ims={mockIms} runtime={mockRuntime} />);
+    expect(screen.getByTestId("custom-fees-config")).toBeInTheDocument();
+  });
+
+  it("still renders HelloWorldPanel at the /hello-world route", () => {
+    window.location.hash = "#/hello-world";
+    render(<App ims={mockIms} runtime={mockRuntime} />);
+    expect(screen.getByTestId("hello-world-panel")).toBeInTheDocument();
+  });
+
+  it("still renders ExtensionRegistration at the index route", () => {
+    window.location.hash = "";
+    render(<App ims={mockIms} runtime={mockRuntime} />);
+    expect(screen.getByTestId("ext-reg")).toBeInTheDocument();
+  });
+
+  it("passes the ims prop to CustomFeesConfig", () => {
+    const testIms = { token: "test-token" };
+    window.location.hash = "#/custom-fees-config";
+    render(<App ims={testIms} runtime={mockRuntime} />);
+    const el = screen.getByTestId("custom-fees-config");
+    expect(el.getAttribute("data-ims")).toBe(JSON.stringify(testIms));
   });
 
   it("renders error fallback when a child component throws", () => {

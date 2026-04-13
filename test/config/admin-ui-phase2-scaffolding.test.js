@@ -193,16 +193,16 @@ describe("Admin UI Phase 2 Scaffolding", () => {
     expect(fs.existsSync(RULE_LIST_PATH)).toBe(false);
   });
 
-  test("RuleForm.jsx does not exist", () => {
-    expect(fs.existsSync(RULE_FORM_PATH)).toBe(false);
+  test("RuleForm.jsx exists", () => {
+    expect(fs.existsSync(RULE_FORM_PATH)).toBe(true);
   });
 
-  test("DeleteConfirm.jsx does not exist", () => {
-    expect(fs.existsSync(DELETE_CONFIRM_PATH)).toBe(false);
+  test("DeleteConfirm.jsx exists", () => {
+    expect(fs.existsSync(DELETE_CONFIRM_PATH)).toBe(true);
   });
 
-  test("utils/api.js does not exist", () => {
-    expect(fs.existsSync(API_UTIL_PATH)).toBe(false);
+  test("utils/api.js exists", () => {
+    expect(fs.existsSync(API_UTIL_PATH)).toBe(true);
   });
 
   test("utils/GuestConnectionContext.js does not exist", () => {

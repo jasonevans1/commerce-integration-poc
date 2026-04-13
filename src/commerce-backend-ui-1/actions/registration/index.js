@@ -29,6 +29,10 @@ async function main(_params) {
     statusCode: HTTP_OK,
     body: {
       registration: {
+        page: {
+          title: "Custom Fees",
+          href: "index.html#/custom-fees-config",
+        },
         order: {
           customFees,
           massActions: [

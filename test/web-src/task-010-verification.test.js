@@ -13,10 +13,6 @@ const EXT_CONFIG_PATH = path.join(
   "src/commerce-backend-ui-1/ext.config.yaml",
 );
 
-const RULE_LIST_TEST_PATH = path.join(
-  ROOT,
-  "test/web-src/components/RuleList.test.jsx",
-);
 const RULE_FORM_TEST_PATH = path.join(
   ROOT,
   "test/web-src/components/RuleForm.test.jsx",
@@ -44,20 +40,16 @@ describe("Task 010 requirements", () => {
     expect(extConfig.actions).toBe("actions");
   });
 
-  it("RuleList test file does not exist", () => {
-    expect(fs.existsSync(RULE_LIST_TEST_PATH)).toBe(false);
+  it("RuleForm test file exists", () => {
+    expect(fs.existsSync(RULE_FORM_TEST_PATH)).toBe(true);
   });
 
-  it("RuleForm test file does not exist", () => {
-    expect(fs.existsSync(RULE_FORM_TEST_PATH)).toBe(false);
+  it("DeleteConfirm test file exists", () => {
+    expect(fs.existsSync(DELETE_CONFIRM_TEST_PATH)).toBe(true);
   });
 
-  it("DeleteConfirm test file does not exist", () => {
-    expect(fs.existsSync(DELETE_CONFIRM_TEST_PATH)).toBe(false);
-  });
-
-  it("api utility test file does not exist", () => {
-    expect(fs.existsSync(API_TEST_PATH)).toBe(false);
+  it("api utility test file exists", () => {
+    expect(fs.existsSync(API_TEST_PATH)).toBe(true);
   });
 
   it("@adobe/exc-app mock exists at test/__mocks__/@adobe/exc-app.js", () => {
