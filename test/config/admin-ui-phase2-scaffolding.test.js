@@ -73,13 +73,16 @@ describe("Admin UI Phase 2 Scaffolding", () => {
     indexCss = fs.existsSync(INDEX_CSS_PATH);
   });
 
-  test("ext.config.yaml declares the registration action with require-adobe-auth true and web yes", () => {
+  test("ext.config.yaml declares the registration action as a public web action", () => {
     const registrationAction =
       extConfig.runtimeManifest.packages["admin-ui-sdk"].actions.registration;
 
     expect(registrationAction).toBeDefined();
     expect(registrationAction.web).toBe("yes");
-    expect(registrationAction.annotations["require-adobe-auth"]).toBe(true);
+    // The registration endpoint returns public fee/action definitions and must not
+    // require Adobe auth — the app-registry validator injected by require-adobe-auth
+    // blocks Commerce Admin calls and returns HTTP 500 before the action code runs.
+    expect(registrationAction.annotations["require-adobe-auth"]).toBe(false);
   });
 
   test('ext.config.yaml web field is the string "web-src" not a nested object', () => {
