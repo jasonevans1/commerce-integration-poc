@@ -1,0 +1,8 @@
+{
+  "name": "commerce-integration-delivery-fee-admin",
+  "displayName": "Delivery Fee Rules Admin",
+  "description": "Admin UI for managing delivery fee rules by country and region",
+  "platform": "web",
+  "id": "delivery-fee-rules",
+  "version": "1.0.0"
+}

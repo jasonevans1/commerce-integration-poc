@@ -278,6 +278,84 @@ Event names MUST include the type prefix.
 
 ---
 
+## Admin UI SDK Troubleshooting
+
+### Registration Action Returns 500 (app-registry validator)
+
+**Symptom** — `aio runtime action invoke admin-ui-sdk/registration --result` returns:
+
+```json
+{ "error": { "body": { "error": "server error" }, "statusCode": 500 } }
+```
+
+The activation log shows the `adobeio/shared-validators-v1/app-registry` sequence step completing in ~3ms with no output logs, meaning the validator fails before the action code ever runs. Force redeploy does not fix it.
+
+**Cause** — `require-adobe-auth: true` and `final: true` annotations on the registration action in `ext.config.yaml` inject the `app-registry` validator sequence. This validator checks caller credentials against Adobe App Registry and fails when called by the Commerce Admin (which doesn't pass the expected auth tokens) or when the App Registry entry is stale.
+
+**Fix** — remove the auth annotations from the registration action. The endpoint only returns public fee/action definitions and does not need Adobe auth:
+
+```yaml
+# ❌ Causes 500 — app-registry validator blocks Commerce Admin calls
+actions:
+  registration:
+    function: actions/registration/index.js
+    web: 'yes'
+    annotations:
+      require-adobe-auth: true
+      final: true
+
+# ✅ Correct — public web action, no validator injected
+actions:
+  registration:
+    function: actions/registration/index.js
+    web: 'yes'
+    annotations:
+      require-adobe-auth: false
+      final: false
+```
+
+Then redeploy:
+
+```bash
+aio app deploy --force-deploy
+```
+
+Verify with a direct curl — should return 200 with `registration` payload:
+
+```bash
+curl -s "https://<namespace>.adobeio-static.net/api/v1/web/admin-ui-sdk/registration"
+```
+
+### customFees Not Appearing in Commerce Admin
+
+1. Confirm the registration action returns 200 (see above — 500 means fees never reach Commerce)
+2. Confirm `customFees` array in the response is non-empty (rules must exist in I/O State)
+3. Create rules via the secured action if the array is empty:
+
+```bash
+aio runtime action invoke delivery-fee/__secured_rules-create --result \
+  -p country US -p region CA -p name "US California Delivery Fee" \
+  -p type fixed -p value 9.99
+```
+
+4. Reload the Commerce Admin Create Order page and check the Admin UI SDK log in the browser console
+
+### massActions Missing Mandatory Fields Warning
+
+**Symptom** — Admin UI SDK log shows: _"One or more registered mass actions failed due to missing mandatory fields. Mandatory fields [actionId,label,path]"_
+
+**Cause** — mass action entry uses `id` instead of `actionId`.
+
+```javascript
+// ❌ Wrong
+{ id: "hello-world", label: "Hello World", path: "index.html#/hello-world" }
+
+// ✅ Correct
+{ actionId: "hello-world", label: "Hello World", path: "index.html#/hello-world" }
+```
+
+---
+
 ## Runtime Action Troubleshooting
 
 ### Viewing Logs

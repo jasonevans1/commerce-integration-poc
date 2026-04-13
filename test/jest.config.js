@@ -45,6 +45,9 @@ module.exports = {
         "^@adobe/react-spectrum$":
           "<rootDir>/test/__mocks__/@adobe/react-spectrum.js",
         "^@adobe/uix-guest$": "<rootDir>/test/__mocks__/@adobe/uix-guest.js",
+        "^@adobe/exc-app$": "<rootDir>/test/__mocks__/@adobe/exc-app.js",
+        "^core-js/stable$": "<rootDir>/test/__mocks__/empty.js",
+        "^regenerator-runtime/runtime$": "<rootDir>/test/__mocks__/empty.js",
       },
       transform: {
         "^.+\\.[jt]sx?$": [

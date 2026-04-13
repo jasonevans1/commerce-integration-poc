@@ -1,18 +1,53 @@
-import { Route, Routes } from "react-router-dom";
+import { lightTheme, Provider } from "@adobe/react-spectrum";
+import { ErrorBoundary } from "react-error-boundary";
+import { HashRouter, Route, Routes } from "react-router-dom";
 
 import ExtensionRegistration from "./components/ExtensionRegistration.jsx";
-import RuleForm from "./components/RuleForm.jsx";
-import RuleList from "./components/RuleList.jsx";
+import HelloWorldPanel from "./components/HelloWorldPanel.jsx";
 
-export default function App() {
+function App(props) {
+  props.runtime.on("configuration", () => {
+    // intentionally empty — placeholder for org/token change handling
+  });
+  props.runtime.on("history", () => {
+    // intentionally empty — placeholder for history change handling
+  });
+
   return (
-    <ExtensionRegistration>
-      <Routes>
-        <Route element={<RuleList />} path="/" />
-        <Route element={<RuleForm />} path="/rules/new" />
-        <Route element={<RuleForm />} path="/rules/edit/:country/:region" />
-        <Route element={<div>404 Not Found</div>} path="*" />
-      </Routes>
-    </ExtensionRegistration>
+    <ErrorBoundary FallbackComponent={fallbackComponent} onError={onError}>
+      <HashRouter>
+        <Provider colorScheme={"light"} theme={lightTheme}>
+          <Routes>
+            <Route
+              element={
+                <ExtensionRegistration
+                  ims={props.ims}
+                  runtime={props.runtime}
+                />
+              }
+              index
+            />
+            <Route element={<HelloWorldPanel />} path="/hello-world" />
+          </Routes>
+        </Provider>
+      </HashRouter>
+    </ErrorBoundary>
   );
+
+  function onError(_e, _componentStack) {
+    // intentionally empty — errors logged by ErrorBoundary
+  }
+
+  function fallbackComponent({ componentStack, error }) {
+    return (
+      <>
+        <h1 style={{ textAlign: "center", marginTop: "20px" }}>
+          Something went wrong :(
+        </h1>
+        <pre>{`${componentStack}\n${error.message}`}</pre>
+      </>
+    );
+  }
 }
+
+export default App;
