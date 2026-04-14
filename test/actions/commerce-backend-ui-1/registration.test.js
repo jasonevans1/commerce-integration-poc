@@ -156,27 +156,32 @@ describe("registration action", () => {
     }
   });
 
-  it("includes a page registration entry in the response body", async () => {
+  it("includes a menuItems array in the registration response", async () => {
     const result = await main({});
-    expect(result.body.registration).toHaveProperty("page");
+    expect(Array.isArray(result.body.registration.menuItems)).toBe(true);
   });
 
-  it('sets the page title to "Custom Fees"', async () => {
+  it('includes a menuItem with title "Custom Fees"', async () => {
     const result = await main({});
-    expect(result.body.registration.page.title).toBe("Custom Fees");
-  });
-
-  it('sets the page href to "index.html#/custom-fees-config"', async () => {
-    const result = await main({});
-    expect(result.body.registration.page.href).toBe(
-      "index.html#/custom-fees-config",
+    const item = result.body.registration.menuItems.find(
+      (m) => m.title === "Custom Fees",
     );
+    expect(item).toBeDefined();
   });
 
-  it("it still returns order.customFees and order.massActions alongside the page registration", async () => {
+  it('includes a section menuItem with title "Store Extensions" and isSection true', async () => {
+    const result = await main({});
+    const section = result.body.registration.menuItems.find(
+      (m) => m.isSection === true,
+    );
+    expect(section).toBeDefined();
+    expect(section.title).toBe("Store Extensions");
+  });
+
+  it("still returns order.customFees and order.massActions alongside menuItems", async () => {
     const result = await main({});
     const { registration } = result.body;
-    expect(registration).toHaveProperty("page");
+    expect(Array.isArray(registration.menuItems)).toBe(true);
     expect(Array.isArray(registration.order.customFees)).toBe(true);
     expect(Array.isArray(registration.order.massActions)).toBe(true);
   });

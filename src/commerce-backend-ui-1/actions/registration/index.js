@@ -29,10 +29,20 @@ async function main(_params) {
     statusCode: HTTP_OK,
     body: {
       registration: {
-        page: {
-          title: "Custom Fees",
-          href: "index.html#/custom-fees-config",
-        },
+        menuItems: [
+          {
+            id: "delivery-fee-rules::custom-fees",
+            title: "Custom Fees",
+            parent: "delivery-fee-rules::store-extensions",
+            sortOrder: 1,
+          },
+          {
+            id: "delivery-fee-rules::store-extensions",
+            title: "Store Extensions",
+            isSection: true,
+            sortOrder: 100,
+          },
+        ],
         order: {
           customFees,
           massActions: [

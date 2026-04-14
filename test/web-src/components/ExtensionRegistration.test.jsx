@@ -9,9 +9,11 @@ jest.mock("@adobe/uix-guest", () => ({
 }));
 
 const EXTENSION_ID = "delivery-fee-rules";
+const CUSTOM_FEES_HASH = "/custom-fees-config";
 
 beforeEach(() => {
   register.mockResolvedValue({});
+  window.location.hash = "";
 });
 
 afterEach(() => {
@@ -53,6 +55,25 @@ describe("ExtensionRegistration", () => {
     );
 
     expect(container.firstChild).toBeNull();
+  });
+
+  it("redirects to /custom-fees-config after successful registration", async () => {
+    render(React.createElement(ExtensionRegistration, null));
+
+    await waitFor(() => {
+      expect(window.location.hash).toBe(`#${CUSTOM_FEES_HASH}`);
+    });
+  });
+
+  it("does not redirect when register throws", async () => {
+    register.mockRejectedValue(new Error("registration failed"));
+    render(React.createElement(ExtensionRegistration, null));
+
+    await waitFor(() => {
+      expect(register).toHaveBeenCalledTimes(1);
+    });
+
+    expect(window.location.hash).toBe("");
   });
 
   it("catches and logs errors from register without throwing", async () => {
