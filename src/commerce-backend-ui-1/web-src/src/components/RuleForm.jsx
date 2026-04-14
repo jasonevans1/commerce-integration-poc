@@ -39,7 +39,7 @@ function validateForm(fields) {
   return errors;
 }
 
-export default function RuleForm({ rule, token, onSuccess, onCancel }) {
+export default function RuleForm({ rule, ims, onSuccess, onCancel }) {
   const isEditMode = rule !== null && rule !== undefined;
 
   const [fields, setFields] = useState(
@@ -64,8 +64,8 @@ export default function RuleForm({ rule, token, onSuccess, onCancel }) {
 
     try {
       const saved = isEditMode
-        ? await updateRule(token, fields)
-        : await createRule(token, fields);
+        ? await updateRule(ims, fields)
+        : await createRule(ims, fields);
       onSuccess(saved);
     } finally {
       setSubmitting(false);

@@ -33,13 +33,13 @@ export default function CustomFeesConfig({ ims }) {
   const fetchRules = useCallback(async () => {
     setFetchState(STATE_LOADING);
     try {
-      const fetched = await listRules(ims.token);
+      const fetched = await listRules(ims);
       setRules(fetched);
       setFetchState(STATE_IDLE);
     } catch (_err) {
       setFetchState(STATE_ERROR);
     }
-  }, [ims.token]);
+  }, [ims]);
 
   useEffect(() => {
     fetchRules();
@@ -106,10 +106,10 @@ export default function CustomFeesConfig({ ims }) {
 
       {showForm && (
         <RuleForm
+          ims={ims}
           onCancel={handleFormCancel}
           onSuccess={handleFormSuccess}
           rule={editingRule}
-          token={ims.token}
         />
       )}
 

@@ -10,6 +10,8 @@ import {
 jest.mock("../../../src/commerce-backend-ui-1/web-src/src/utils/api");
 
 const MOCK_TOKEN = "test-token";
+const MOCK_ORG = "TEST123@AdobeOrg";
+const MOCK_IMS = { token: MOCK_TOKEN, org: MOCK_ORG };
 
 const MOCK_RULE_VALUE = 5;
 const MOCK_BAVARIA_FEE_VALUE = 3;
@@ -31,7 +33,7 @@ describe("RuleForm", () => {
     render(
       React.createElement(RuleForm, {
         rule: null,
-        token: MOCK_TOKEN,
+        ims: MOCK_IMS,
         onSuccess: jest.fn(),
         onCancel: jest.fn(),
       }),
@@ -48,7 +50,7 @@ describe("RuleForm", () => {
     render(
       React.createElement(RuleForm, {
         rule: MOCK_RULE,
-        token: MOCK_TOKEN,
+        ims: MOCK_IMS,
         onSuccess: jest.fn(),
         onCancel: jest.fn(),
       }),
@@ -65,7 +67,7 @@ describe("RuleForm", () => {
     render(
       React.createElement(RuleForm, {
         rule: null,
-        token: MOCK_TOKEN,
+        ims: MOCK_IMS,
         onSuccess: jest.fn(),
         onCancel: jest.fn(),
       }),
@@ -90,7 +92,7 @@ describe("RuleForm", () => {
     render(
       React.createElement(RuleForm, {
         rule: null,
-        token: MOCK_TOKEN,
+        ims: MOCK_IMS,
         onSuccess: jest.fn(),
         onCancel: jest.fn(),
       }),
@@ -115,7 +117,7 @@ describe("RuleForm", () => {
     fireEvent.click(screen.getByText("Save"));
 
     await waitFor(() => {
-      expect(createRule).toHaveBeenCalledWith(MOCK_TOKEN, {
+      expect(createRule).toHaveBeenCalledWith(MOCK_IMS, {
         country: "DE",
         region: "BY",
         name: "Bavaria Fee",
@@ -131,7 +133,7 @@ describe("RuleForm", () => {
     render(
       React.createElement(RuleForm, {
         rule: MOCK_RULE,
-        token: MOCK_TOKEN,
+        ims: MOCK_IMS,
         onSuccess: jest.fn(),
         onCancel: jest.fn(),
       }),
@@ -140,7 +142,7 @@ describe("RuleForm", () => {
     fireEvent.click(screen.getByText("Save"));
 
     await waitFor(() => {
-      expect(updateRule).toHaveBeenCalledWith(MOCK_TOKEN, MOCK_RULE);
+      expect(updateRule).toHaveBeenCalledWith(MOCK_IMS, MOCK_RULE);
     });
   });
 
@@ -159,7 +161,7 @@ describe("RuleForm", () => {
     render(
       React.createElement(RuleForm, {
         rule: null,
-        token: MOCK_TOKEN,
+        ims: MOCK_IMS,
         onSuccess,
         onCancel: jest.fn(),
       }),
@@ -194,7 +196,7 @@ describe("RuleForm", () => {
     render(
       React.createElement(RuleForm, {
         rule: null,
-        token: MOCK_TOKEN,
+        ims: MOCK_IMS,
         onSuccess: jest.fn(),
         onCancel,
       }),
@@ -209,7 +211,7 @@ describe("RuleForm", () => {
     render(
       React.createElement(RuleForm, {
         rule: null,
-        token: MOCK_TOKEN,
+        ims: MOCK_IMS,
         onSuccess: jest.fn(),
         onCancel: jest.fn(),
       }),
@@ -225,7 +227,7 @@ describe("RuleForm", () => {
     render(
       React.createElement(RuleForm, {
         rule: null,
-        token: MOCK_TOKEN,
+        ims: MOCK_IMS,
         onSuccess: jest.fn(),
         onCancel: jest.fn(),
       }),
@@ -264,7 +266,7 @@ describe("RuleForm", () => {
     render(
       React.createElement(RuleForm, {
         rule: null,
-        token: MOCK_TOKEN,
+        ims: MOCK_IMS,
         onSuccess: jest.fn(),
         onCancel: jest.fn(),
       }),

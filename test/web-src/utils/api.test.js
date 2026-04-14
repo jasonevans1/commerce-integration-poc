@@ -12,6 +12,8 @@ const EXPECTED_RULES_CREATE_URL =
 const EXPECTED_RULES_DELETE_URL =
   "https://291222-516bronzepike-stage.adobeio-static.net/api/v1/web/delivery-fee/rules-delete";
 const MOCK_TOKEN = "mock-ims-bearer-token";
+const MOCK_ORG = "ABCDEF123@AdobeOrg";
+const MOCK_IMS = { token: MOCK_TOKEN, org: MOCK_ORG };
 const MOCK_COUNTRY = "US";
 const MOCK_REGION = "CA";
 const MOCK_FEE_VALUE = 5;
@@ -50,19 +52,20 @@ afterEach(() => {
 
 describe("api utility", () => {
   describe("listRules", () => {
-    it("calls the rules-list action URL with a Bearer token", async () => {
+    it("calls the rules-list action URL with a Bearer token and org ID", async () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ rules: MOCK_RULES_LIST }),
       });
 
-      await listRules(MOCK_TOKEN);
+      await listRules(MOCK_IMS);
 
       expect(global.fetch).toHaveBeenCalledWith(
         EXPECTED_RULES_LIST_URL,
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Bearer ${MOCK_TOKEN}`,
+            "x-gw-ims-org-id": MOCK_ORG,
           }),
         }),
       );
@@ -74,7 +77,7 @@ describe("api utility", () => {
         json: async () => ({ rules: MOCK_RULES_LIST }),
       });
 
-      const result = await listRules(MOCK_TOKEN);
+      const result = await listRules(MOCK_IMS);
 
       expect(result).toEqual(MOCK_RULES_LIST);
     });
@@ -91,7 +94,7 @@ describe("api utility", () => {
         "../../../src/commerce-backend-ui-1/web-src/src/utils/api"
       );
 
-      await expect(listRulesNoConfig(MOCK_TOKEN)).rejects.toThrow(
+      await expect(listRulesNoConfig(MOCK_IMS)).rejects.toThrow(
         REGISTRATION_URL_MISSING_PATTERN,
       );
     });
@@ -103,20 +106,20 @@ describe("api utility", () => {
         statusText: "Internal Server Error",
       });
 
-      await expect(listRules(MOCK_TOKEN)).rejects.toThrow(
+      await expect(listRules(MOCK_IMS)).rejects.toThrow(
         HTTP_STATUS_500_PATTERN,
       );
     });
   });
 
   describe("createRule", () => {
-    it("calls the rules-create action URL with the rule payload and Bearer token", async () => {
+    it("calls the rules-create action URL with the rule payload, Bearer token, and org ID", async () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ rule: MOCK_RULE }),
       });
 
-      await createRule(MOCK_TOKEN, MOCK_RULE);
+      await createRule(MOCK_IMS, MOCK_RULE);
 
       expect(global.fetch).toHaveBeenCalledWith(
         EXPECTED_RULES_CREATE_URL,
@@ -124,6 +127,7 @@ describe("api utility", () => {
           method: "POST",
           headers: expect.objectContaining({
             Authorization: `Bearer ${MOCK_TOKEN}`,
+            "x-gw-ims-org-id": MOCK_ORG,
             "Content-Type": "application/json",
           }),
           body: JSON.stringify(MOCK_RULE),
@@ -137,7 +141,7 @@ describe("api utility", () => {
         json: async () => ({ rule: MOCK_RULE }),
       });
 
-      const result = await createRule(MOCK_TOKEN, MOCK_RULE);
+      const result = await createRule(MOCK_IMS, MOCK_RULE);
 
       expect(result).toEqual(MOCK_RULE);
     });
@@ -150,7 +154,7 @@ describe("api utility", () => {
         json: async () => ({ rule: MOCK_RULE }),
       });
 
-      await updateRule(MOCK_TOKEN, MOCK_RULE);
+      await updateRule(MOCK_IMS, MOCK_RULE);
 
       expect(global.fetch).toHaveBeenCalledWith(
         EXPECTED_RULES_CREATE_URL,
@@ -158,6 +162,7 @@ describe("api utility", () => {
           method: "POST",
           headers: expect.objectContaining({
             Authorization: `Bearer ${MOCK_TOKEN}`,
+            "x-gw-ims-org-id": MOCK_ORG,
             "Content-Type": "application/json",
           }),
           body: JSON.stringify(MOCK_RULE),
@@ -173,7 +178,7 @@ describe("api utility", () => {
         json: async () => ({}),
       });
 
-      await deleteRule(MOCK_TOKEN, MOCK_COUNTRY, MOCK_REGION);
+      await deleteRule(MOCK_IMS, MOCK_COUNTRY, MOCK_REGION);
 
       expect(global.fetch).toHaveBeenCalledWith(
         EXPECTED_RULES_DELETE_URL,
@@ -181,6 +186,7 @@ describe("api utility", () => {
           method: "POST",
           headers: expect.objectContaining({
             Authorization: `Bearer ${MOCK_TOKEN}`,
+            "x-gw-ims-org-id": MOCK_ORG,
             "Content-Type": "application/json",
           }),
           body: JSON.stringify({ country: MOCK_COUNTRY, region: MOCK_REGION }),

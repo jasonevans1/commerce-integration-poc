@@ -40,7 +40,8 @@ jest.mock(
 
 const EXPECTED_FETCH_COUNT_AFTER_REFRESH = 2;
 const MOCK_TOKEN = "test-token";
-const MOCK_IMS = { token: MOCK_TOKEN };
+const MOCK_ORG = "TEST123@AdobeOrg";
+const MOCK_IMS = { token: MOCK_TOKEN, org: MOCK_ORG };
 
 const MOCK_RULES = [
   {

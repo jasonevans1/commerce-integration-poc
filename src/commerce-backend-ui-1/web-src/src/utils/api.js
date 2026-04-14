@@ -25,9 +25,10 @@ function resolveActionUrl(actionName) {
   );
 }
 
-function buildAuthHeaders(token) {
+function buildAuthHeaders(ims) {
   return {
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${ims.token}`,
+    "x-gw-ims-org-id": ims.org,
   };
 }
 
@@ -41,11 +42,11 @@ async function handleResponse(response) {
 /**
  * Lists all delivery-fee rules.
  */
-export async function listRules(token) {
+export async function listRules(ims) {
   const url = resolveActionUrl(ACTION_RULES_LIST);
   const response = await fetch(url, {
     method: "GET",
-    headers: buildAuthHeaders(token),
+    headers: buildAuthHeaders(ims),
   });
   const data = await handleResponse(response);
   return data.rules;
@@ -54,12 +55,12 @@ export async function listRules(token) {
 /**
  * Creates a new delivery-fee rule (upsert by country+region).
  */
-export async function createRule(token, rule) {
+export async function createRule(ims, rule) {
   const url = resolveActionUrl(ACTION_RULES_CREATE);
   const response = await fetch(url, {
     method: "POST",
     headers: {
-      ...buildAuthHeaders(token),
+      ...buildAuthHeaders(ims),
       "Content-Type": "application/json",
     },
     body: JSON.stringify(rule),
@@ -71,19 +72,19 @@ export async function createRule(token, rule) {
 /**
  * Updates an existing delivery-fee rule. Calls the same upsert endpoint as createRule.
  */
-export async function updateRule(token, rule) {
-  return await createRule(token, rule);
+export async function updateRule(ims, rule) {
+  return await createRule(ims, rule);
 }
 
 /**
  * Deletes a delivery-fee rule by country and region.
  */
-export async function deleteRule(token, country, region) {
+export async function deleteRule(ims, country, region) {
   const url = resolveActionUrl(ACTION_RULES_DELETE);
   const response = await fetch(url, {
     method: "POST",
     headers: {
-      ...buildAuthHeaders(token),
+      ...buildAuthHeaders(ims),
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ country, region }),
