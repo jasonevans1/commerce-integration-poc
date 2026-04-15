@@ -52,7 +52,7 @@ describe("registration action", () => {
     expect(fee).toHaveProperty("value");
   });
 
-  it("constructs the fee id as delivery-fee-rules::us-ca format", async () => {
+  it("constructs the fee id as delivery-fee-rules-us-ca format", async () => {
     stateService.listRules.mockResolvedValue([
       {
         country: "US",
@@ -64,7 +64,7 @@ describe("registration action", () => {
     ]);
     const result = await main({});
     expect(result.body.registration.order.customFees[0].id).toBe(
-      "delivery-fee-rules::us-ca",
+      "delivery-fee-rules-us-ca",
     );
   });
 
@@ -152,7 +152,7 @@ describe("registration action", () => {
     const result = await main({});
     const fees = result.body.registration.order.customFees;
     for (const fee of fees) {
-      expect(fee.id.startsWith("delivery-fee-rules::")).toBe(true);
+      expect(fee.id.startsWith("delivery-fee-rules-")).toBe(true);
     }
   });
 
@@ -202,7 +202,7 @@ describe("registration action", () => {
     expect(Array.isArray(order.massActions)).toBe(true);
     const EXPECTED_CUSTOM_FEES_COUNT = 1;
     expect(order.customFees).toHaveLength(EXPECTED_CUSTOM_FEES_COUNT);
-    expect(order.customFees[0].id).toBe("delivery-fee-rules::us-ca");
+    expect(order.customFees[0].id).toBe("delivery-fee-rules-us-ca");
     const EXPECTED_MASS_ACTION_COUNT = 1;
     expect(order.massActions).toHaveLength(EXPECTED_MASS_ACTION_COUNT);
     expect(order.massActions[0].actionId).toBe("hello-world");
