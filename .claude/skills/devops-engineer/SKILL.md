@@ -713,6 +713,112 @@ Before running `npm run commerce-event-subscribe` on SaaS:
 
 ---
 
+## Admin UI SDK Extension Testing
+
+Testing a `commerce/backend-ui/1` extension after deployment requires different steps than testing backend actions. The sidebar menu item and the SPA UI must be verified separately.
+
+### Testing the Backend Registration Action
+
+Verify the registration action returns the correct `menuItems` shape:
+
+```bash
+TOKEN=$(aio config get ims.contexts.cli.access_token.token)
+ORG=$(aio console org list --json 2>/dev/null | python3 -c "import sys,json; orgs=json.load(sys.stdin); [print(o['code']) for o in orgs if 'your-org-name' in o.get('name','').lower()]")
+
+# Or use the invoke script
+./scripts/test-action/invoke.sh admin-ui-sdk/registration -m GET
+```
+
+Expected response shape:
+
+```json
+{
+  "registration": {
+    "menuItems": [
+      { "id": "...", "title": "...", "parent": "...", "sortOrder": 1 },
+      { "id": "...", "title": "...", "isSection": true, "sortOrder": 100 }
+    ],
+    "order": { "customFees": [...], "massActions": [...] }
+  }
+}
+```
+
+### Testing the SPA UI (ECS devMode)
+
+The fastest way to test the deployed SPA without Commerce Admin association:
+
+```
+https://experience.adobe.com/?devMode=true#/custom-apps/?localDevUrl=<deployed-static-url>/index.html
+```
+
+The `<deployed-static-url>` is shown in `aio app deploy` output:
+
+```
+To view your deployed application:
+  -> https://<namespace>.adobeio-static.net/index.html
+```
+
+**What this tests**: SPA loads, routing works, `ExtensionRegistration` runs, redirects to the configured route, and the page fetches data from backend actions.
+
+**Requirement**: You must be signed into `experience.adobe.com` with the Adobe account that owns the App Builder org. The ECS shell provides the IMS token and org ID automatically to the SPA.
+
+### Auth Headers Required by Backend Actions
+
+App Builder's `require-adobe-auth: true` validates **both** headers. Missing either causes 401:
+
+```bash
+TOKEN=$(aio config get ims.contexts.cli.access_token.token)
+ORG_ID="<your-org>@AdobeOrg"   # from: aio console org list --json
+
+curl -H "Authorization: Bearer $TOKEN" \
+     -H "x-gw-ims-org-id: $ORG_ID" \
+     "https://<namespace>.adobeio-static.net/api/v1/web/<package>/<action>"
+```
+
+**In the SPA**, the `ims` object from the ECS shell (`props.ims`) must be passed as-is to all API utilities — not just `ims.token`. The `ims.org` field provides the org ID for the `x-gw-ims-org-id` header.
+
+```javascript
+// ✅ Correct — passes full ims object
+function buildAuthHeaders(ims) {
+  return {
+    Authorization: `Bearer ${ims.token}`,
+    "x-gw-ims-org-id": ims.org,
+  };
+}
+
+// ❌ Wrong — missing org header, causes 401
+function buildAuthHeaders(token) {
+  return { Authorization: `Bearer ${token}` };
+}
+```
+
+### Getting the Sidebar Menu Item into Commerce Admin
+
+The `menuItems` extension point only appears in Commerce Admin sidebar after the app is **associated** via App Management. This requires:
+
+| Path                          | Requirement                        | Notes                                                              |
+| ----------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
+| **Stage workspace**           | Adobe Exchange compatibility check | App Management rejects Stage unless app passes Exchange validation |
+| **Production workspace**      | Adobe Exchange compatibility check | Try this first before Exchange submission                          |
+| **Adobe Exchange submission** | Full marketplace review            | Required for long-term / customer-facing use                       |
+
+**App Management** is at: `Commerce Admin → Apps → App Management` (opens `experience.adobe.com/#/commerce/app-management/...`)
+
+**Workaround for dev/stage** — use the ECS devMode URL above to test all SPA functionality without Commerce Admin association.
+
+### Common Admin UI SDK Issues
+
+| Symptom                                                | Root Cause                                                                           | Fix                                                          |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| Menu item not appearing in sidebar                     | App not associated via App Management                                                | Associate app or use ECS devMode URL                         |
+| "Not compatible with Adobe Commerce" in App Management | Exchange compatibility check fails for Stage workspace                               | Try Production workspace; or submit to Exchange              |
+| `401` on API calls from SPA                            | Missing `x-gw-ims-org-id` header                                                     | Pass full `ims` object (not just `ims.token`) to API utility |
+| "Failed to load rules" in ECS devMode                  | ECS org context doesn't match App Builder namespace org                              | Ensure logged-in Adobe account owns the App Builder org      |
+| Page loads but redirects to registration route         | `ExtensionRegistration` missing `window.location.hash = '/route'` after `register()` | Add hash redirect after `register()` resolves                |
+| `page: { title, href }` not creating menu item         | `page` is not a valid Admin UI SDK extension point                                   | Use `menuItems` array extension point instead                |
+
+---
+
 ## CI/CD Pipeline Setup
 
 ### GitHub Actions Workflow

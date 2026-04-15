@@ -25,6 +25,7 @@ junit.xml
 dist*/
 
 # IDE & Temp
+.playwright-cli
 .aws.tmp.creds.json
 .cache
 .cursor/*
