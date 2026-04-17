@@ -816,6 +816,61 @@ The `menuItems` extension point only appears in Commerce Admin sidebar after the
 | "Failed to load rules" in ECS devMode                  | ECS org context doesn't match App Builder namespace org                              | Ensure logged-in Adobe account owns the App Builder org      |
 | Page loads but redirects to registration route         | `ExtensionRegistration` missing `window.location.hash = '/route'` after `register()` | Add hash redirect after `register()` resolves                |
 | `page: { title, href }` not creating menu item         | `page` is not a valid Admin UI SDK extension point                                   | Use `menuItems` array extension point instead                |
+| "Failed to load rules" from Commerce Admin sidebar     | No IMS token available in menu page extension iframes — see full analysis below      | Make backend actions public (`require-adobe-auth: false`)    |
+| Extension iframes show empty content (no spinner)      | `register()` is fire-and-forget; accessing `sharedContext` right after throws        | Never access `sharedContext` immediately after `register()`  |
+
+### Admin UI SDK Menu Page Extension: Auth Root Cause & Fix
+
+**The problem**: When a `menuItems` extension is embedded in the Commerce Admin sidebar, the SPA runs inside a cross-origin iframe. Neither the ECS shell (`@adobe/exc-app`) nor the UIX Guest (`@adobe/uix-guest`) channel provides an IMS token in this context.
+
+**Why UIX Guest doesn't work for menu pages**:
+
+The Admin UI SDK creates a separate named UIX guest iframe (for extension method registration) alongside the content display iframe. The host sets up a `GuestServer` (register) channel for the named iframe, but does NOT set up a `GuestUI` (attach) channel for menu page content iframes. So `attach()` always times out (default 20 seconds).
+
+**Critical gotcha — `register()` is fire-and-forget**:
+
+```js
+async function register(config) {
+  const guest = new GuestServer(config);
+  guest.register(config.methods, config.metadata); // NOT awaited internally
+  return guest; // returns BEFORE connection established
+}
+```
+
+`register()` returns immediately before the UIX connection is established. `sharedContext` on the returned object is `undefined` at that point. Accessing it throws `TypeError: Cannot read properties of undefined (reading 'get')`, which `.catch()` silently swallows, breaking the hash redirect and leaving iframes empty.
+
+```js
+// ❌ BREAKS the extension — sharedContext is undefined right after register()
+const guest = await register({ id: EXTENSION_ID, methods: {} });
+const token = guest.sharedContext.get("token"); // TypeError! Caught silently.
+window.location.hash = CUSTOM_FEES_ROUTE; // Never reached.
+
+// ✅ CORRECT — only change the hash, do not access sharedContext
+await register({ id: EXTENSION_ID, methods: {} });
+window.location.hash = CUSTOM_FEES_ROUTE;
+```
+
+**Fix for POC / internal tools**:
+
+Set `require-adobe-auth: false` on the delivery-fee actions in `actions.config.yaml`. Update `buildAuthHeaders` to return empty headers when no token, so the SPA can call the now-public actions without auth:
+
+```js
+function buildAuthHeaders(ims) {
+  if (!ims?.token) {
+    return {};
+  }
+  return {
+    Authorization: `Bearer ${ims.token}`,
+    "x-gw-ims-org-id": ims.org,
+  };
+}
+```
+
+The ECS devMode URL path continues to work — the ECS shell provides `ims.token` and `ims.org`, and auth headers are sent when available.
+
+**Fix for production**:
+
+Use App Builder service-to-service OAuth credentials (stored as runtime secrets) in the backend actions to authenticate server-side calls. The frontend actions remain public but delegate any sensitive operations to authed backend logic.
 
 ---
 
