@@ -26,6 +26,9 @@ function resolveActionUrl(actionName) {
 }
 
 function buildAuthHeaders(ims) {
+  if (!ims?.token) {
+    return {};
+  }
   return {
     Authorization: `Bearer ${ims.token}`,
     "x-gw-ims-org-id": ims.org,
