@@ -713,6 +713,167 @@ Before running `npm run commerce-event-subscribe` on SaaS:
 
 ---
 
+## Admin UI SDK Extension Testing
+
+Testing a `commerce/backend-ui/1` extension after deployment requires different steps than testing backend actions. The sidebar menu item and the SPA UI must be verified separately.
+
+### Testing the Backend Registration Action
+
+Verify the registration action returns the correct `menuItems` shape:
+
+```bash
+TOKEN=$(aio config get ims.contexts.cli.access_token.token)
+ORG=$(aio console org list --json 2>/dev/null | python3 -c "import sys,json; orgs=json.load(sys.stdin); [print(o['code']) for o in orgs if 'your-org-name' in o.get('name','').lower()]")
+
+# Or use the invoke script
+./scripts/test-action/invoke.sh admin-ui-sdk/registration -m GET
+```
+
+Expected response shape:
+
+```json
+{
+  "registration": {
+    "menuItems": [
+      { "id": "...", "title": "...", "parent": "...", "sortOrder": 1 },
+      { "id": "...", "title": "...", "isSection": true, "sortOrder": 100 }
+    ],
+    "order": { "customFees": [...], "massActions": [...] }
+  }
+}
+```
+
+### Testing the SPA UI (ECS devMode)
+
+The fastest way to test the deployed SPA without Commerce Admin association:
+
+```
+https://experience.adobe.com/?devMode=true#/custom-apps/?localDevUrl=<deployed-static-url>/index.html
+```
+
+The `<deployed-static-url>` is shown in `aio app deploy` output:
+
+```
+To view your deployed application:
+  -> https://<namespace>.adobeio-static.net/index.html
+```
+
+**What this tests**: SPA loads, routing works, `ExtensionRegistration` runs, redirects to the configured route, and the page fetches data from backend actions.
+
+**Requirement**: You must be signed into `experience.adobe.com` with the Adobe account that owns the App Builder org. The ECS shell provides the IMS token and org ID automatically to the SPA.
+
+### Auth Headers Required by Backend Actions
+
+App Builder's `require-adobe-auth: true` validates **both** headers. Missing either causes 401:
+
+```bash
+TOKEN=$(aio config get ims.contexts.cli.access_token.token)
+ORG_ID="<your-org>@AdobeOrg"   # from: aio console org list --json
+
+curl -H "Authorization: Bearer $TOKEN" \
+     -H "x-gw-ims-org-id: $ORG_ID" \
+     "https://<namespace>.adobeio-static.net/api/v1/web/<package>/<action>"
+```
+
+**In the SPA**, the `ims` object from the ECS shell (`props.ims`) must be passed as-is to all API utilities — not just `ims.token`. The `ims.org` field provides the org ID for the `x-gw-ims-org-id` header.
+
+```javascript
+// ✅ Correct — passes full ims object
+function buildAuthHeaders(ims) {
+  return {
+    Authorization: `Bearer ${ims.token}`,
+    "x-gw-ims-org-id": ims.org,
+  };
+}
+
+// ❌ Wrong — missing org header, causes 401
+function buildAuthHeaders(token) {
+  return { Authorization: `Bearer ${token}` };
+}
+```
+
+### Getting the Sidebar Menu Item into Commerce Admin
+
+The `menuItems` extension point only appears in Commerce Admin sidebar after the app is **associated** via App Management. This requires:
+
+| Path                          | Requirement                        | Notes                                                              |
+| ----------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
+| **Stage workspace**           | Adobe Exchange compatibility check | App Management rejects Stage unless app passes Exchange validation |
+| **Production workspace**      | Adobe Exchange compatibility check | Try this first before Exchange submission                          |
+| **Adobe Exchange submission** | Full marketplace review            | Required for long-term / customer-facing use                       |
+
+**App Management** is at: `Commerce Admin → Apps → App Management` (opens `experience.adobe.com/#/commerce/app-management/...`)
+
+**Workaround for dev/stage** — use the ECS devMode URL above to test all SPA functionality without Commerce Admin association.
+
+### Common Admin UI SDK Issues
+
+| Symptom                                                | Root Cause                                                                           | Fix                                                          |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| Menu item not appearing in sidebar                     | App not associated via App Management                                                | Associate app or use ECS devMode URL                         |
+| "Not compatible with Adobe Commerce" in App Management | Exchange compatibility check fails for Stage workspace                               | Try Production workspace; or submit to Exchange              |
+| `401` on API calls from SPA                            | Missing `x-gw-ims-org-id` header                                                     | Pass full `ims` object (not just `ims.token`) to API utility |
+| "Failed to load rules" in ECS devMode                  | ECS org context doesn't match App Builder namespace org                              | Ensure logged-in Adobe account owns the App Builder org      |
+| Page loads but redirects to registration route         | `ExtensionRegistration` missing `window.location.hash = '/route'` after `register()` | Add hash redirect after `register()` resolves                |
+| `page: { title, href }` not creating menu item         | `page` is not a valid Admin UI SDK extension point                                   | Use `menuItems` array extension point instead                |
+| "Failed to load rules" from Commerce Admin sidebar     | No IMS token available in menu page extension iframes — see full analysis below      | Make backend actions public (`require-adobe-auth: false`)    |
+| Extension iframes show empty content (no spinner)      | `register()` is fire-and-forget; accessing `sharedContext` right after throws        | Never access `sharedContext` immediately after `register()`  |
+
+### Admin UI SDK Menu Page Extension: Auth Root Cause & Fix
+
+**The problem**: When a `menuItems` extension is embedded in the Commerce Admin sidebar, the SPA runs inside a cross-origin iframe. Neither the ECS shell (`@adobe/exc-app`) nor the UIX Guest (`@adobe/uix-guest`) channel provides an IMS token in this context.
+
+**Why UIX Guest doesn't work for menu pages**:
+
+The Admin UI SDK creates a separate named UIX guest iframe (for extension method registration) alongside the content display iframe. The host sets up a `GuestServer` (register) channel for the named iframe, but does NOT set up a `GuestUI` (attach) channel for menu page content iframes. So `attach()` always times out (default 20 seconds).
+
+**Critical gotcha — `register()` is fire-and-forget**:
+
+```js
+async function register(config) {
+  const guest = new GuestServer(config);
+  guest.register(config.methods, config.metadata); // NOT awaited internally
+  return guest; // returns BEFORE connection established
+}
+```
+
+`register()` returns immediately before the UIX connection is established. `sharedContext` on the returned object is `undefined` at that point. Accessing it throws `TypeError: Cannot read properties of undefined (reading 'get')`, which `.catch()` silently swallows, breaking the hash redirect and leaving iframes empty.
+
+```js
+// ❌ BREAKS the extension — sharedContext is undefined right after register()
+const guest = await register({ id: EXTENSION_ID, methods: {} });
+const token = guest.sharedContext.get("token"); // TypeError! Caught silently.
+window.location.hash = CUSTOM_FEES_ROUTE; // Never reached.
+
+// ✅ CORRECT — only change the hash, do not access sharedContext
+await register({ id: EXTENSION_ID, methods: {} });
+window.location.hash = CUSTOM_FEES_ROUTE;
+```
+
+**Fix for POC / internal tools**:
+
+Set `require-adobe-auth: false` on the delivery-fee actions in `actions.config.yaml`. Update `buildAuthHeaders` to return empty headers when no token, so the SPA can call the now-public actions without auth:
+
+```js
+function buildAuthHeaders(ims) {
+  if (!ims?.token) {
+    return {};
+  }
+  return {
+    Authorization: `Bearer ${ims.token}`,
+    "x-gw-ims-org-id": ims.org,
+  };
+}
+```
+
+The ECS devMode URL path continues to work — the ECS shell provides `ims.token` and `ims.org`, and auth headers are sent when available.
+
+**Fix for production**:
+
+Use App Builder service-to-service OAuth credentials (stored as runtime secrets) in the backend actions to authenticate server-side calls. The frontend actions remain public but delegate any sensitive operations to authed backend logic.
+
+---
+
 ## CI/CD Pipeline Setup
 
 ### GitHub Actions Workflow

@@ -14,7 +14,7 @@ rules-create:
   inputs:
     LOG_LEVEL: debug
   annotations:
-    require-adobe-auth: true
+    require-adobe-auth: false
     final: true
 rules-get:
   function: rules-get/index.js
@@ -23,7 +23,7 @@ rules-get:
   inputs:
     LOG_LEVEL: debug
   annotations:
-    require-adobe-auth: true
+    require-adobe-auth: false
     final: true
 rules-delete:
   function: rules-delete/index.js
@@ -32,7 +32,7 @@ rules-delete:
   inputs:
     LOG_LEVEL: debug
   annotations:
-    require-adobe-auth: true
+    require-adobe-auth: false
     final: true
 rules-list:
   function: rules-list/index.js
@@ -41,5 +41,5 @@ rules-list:
   inputs:
     LOG_LEVEL: debug
   annotations:
-    require-adobe-auth: true
+    require-adobe-auth: false
     final: true

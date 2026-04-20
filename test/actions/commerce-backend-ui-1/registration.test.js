@@ -52,7 +52,7 @@ describe("registration action", () => {
     expect(fee).toHaveProperty("value");
   });
 
-  it("constructs the fee id as delivery-fee-rules::us-ca format", async () => {
+  it("constructs the fee id as delivery_fee_rules::US_CA format", async () => {
     stateService.listRules.mockResolvedValue([
       {
         country: "US",
@@ -64,7 +64,7 @@ describe("registration action", () => {
     ]);
     const result = await main({});
     expect(result.body.registration.order.customFees[0].id).toBe(
-      "delivery-fee-rules::us-ca",
+      "delivery_fee_rules::US_CA",
     );
   });
 
@@ -132,7 +132,7 @@ describe("registration action", () => {
     });
   });
 
-  it("includes the extension id prefix delivery-fee-rules in every fee id", async () => {
+  it("includes the extension id prefix delivery_fee_rules in every fee id", async () => {
     stateService.listRules.mockResolvedValue([
       {
         country: "US",
@@ -152,8 +152,38 @@ describe("registration action", () => {
     const result = await main({});
     const fees = result.body.registration.order.customFees;
     for (const fee of fees) {
-      expect(fee.id.startsWith("delivery-fee-rules::")).toBe(true);
+      expect(fee.id.startsWith("delivery_fee_rules::")).toBe(true);
     }
+  });
+
+  it("includes a menuItems array in the registration response", async () => {
+    const result = await main({});
+    expect(Array.isArray(result.body.registration.menuItems)).toBe(true);
+  });
+
+  it('includes a menuItem with title "Custom Fees"', async () => {
+    const result = await main({});
+    const item = result.body.registration.menuItems.find(
+      (m) => m.title === "Custom Fees",
+    );
+    expect(item).toBeDefined();
+  });
+
+  it('includes a section menuItem with title "Store Extensions" and isSection true', async () => {
+    const result = await main({});
+    const section = result.body.registration.menuItems.find(
+      (m) => m.isSection === true,
+    );
+    expect(section).toBeDefined();
+    expect(section.title).toBe("Store Extensions");
+  });
+
+  it("still returns order.customFees and order.massActions alongside menuItems", async () => {
+    const result = await main({});
+    const { registration } = result.body;
+    expect(Array.isArray(registration.menuItems)).toBe(true);
+    expect(Array.isArray(registration.order.customFees)).toBe(true);
+    expect(Array.isArray(registration.order.massActions)).toBe(true);
   });
 
   it("still returns order.customFees alongside the new massActions", async () => {
@@ -172,7 +202,7 @@ describe("registration action", () => {
     expect(Array.isArray(order.massActions)).toBe(true);
     const EXPECTED_CUSTOM_FEES_COUNT = 1;
     expect(order.customFees).toHaveLength(EXPECTED_CUSTOM_FEES_COUNT);
-    expect(order.customFees[0].id).toBe("delivery-fee-rules::us-ca");
+    expect(order.customFees[0].id).toBe("delivery_fee_rules::US_CA");
     const EXPECTED_MASS_ACTION_COUNT = 1;
     expect(order.massActions).toHaveLength(EXPECTED_MASS_ACTION_COUNT);
     expect(order.massActions[0].actionId).toBe("hello-world");

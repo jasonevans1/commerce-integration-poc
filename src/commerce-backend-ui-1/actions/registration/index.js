@@ -17,7 +17,7 @@ async function main(_params) {
   try {
     const rules = await stateService.listRules();
     customFees = rules.map((rule) => ({
-      id: `delivery-fee-rules::${rule.country.toLowerCase()}-${rule.region.toLowerCase()}`,
+      id: `delivery_fee_rules::${rule.country.toUpperCase()}_${rule.region.toUpperCase()}`,
       label: `Delivery Fee \u2014 ${rule.country}/${rule.region}`,
       value: rule.value,
     }));
@@ -29,6 +29,20 @@ async function main(_params) {
     statusCode: HTTP_OK,
     body: {
       registration: {
+        menuItems: [
+          {
+            id: "delivery_fee_rules::custom_fees",
+            title: "Custom Fees",
+            parent: "delivery_fee_rules::store_extensions",
+            sortOrder: 1,
+          },
+          {
+            id: "delivery_fee_rules::store_extensions",
+            title: "Store Extensions",
+            isSection: true,
+            sortOrder: 100,
+          },
+        ],
         order: {
           customFees,
           massActions: [
