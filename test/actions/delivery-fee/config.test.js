@@ -36,39 +36,39 @@ describe("actions/delivery-fee/actions.config.yaml", () => {
     );
   });
 
-  it("defines rules-create action as a public web action with no adobe auth", () => {
+  it("defines rules-create action as a web action requiring adobe auth", () => {
     expect(actionsConfig).toBeDefined();
     expect(actionsConfig["rules-create"]).toBeDefined();
     expect(actionsConfig["rules-create"].web).toBe("yes");
     expect(
       actionsConfig["rules-create"].annotations["require-adobe-auth"],
-    ).toBe(false);
+    ).toBe(true);
   });
 
-  it("defines rules-get action as a public web action with no adobe auth", () => {
+  it("defines rules-get action as a web action requiring adobe auth", () => {
     expect(actionsConfig).toBeDefined();
     expect(actionsConfig["rules-get"]).toBeDefined();
     expect(actionsConfig["rules-get"].web).toBe("yes");
     expect(actionsConfig["rules-get"].annotations["require-adobe-auth"]).toBe(
-      false,
+      true,
     );
   });
 
-  it("defines rules-delete action as a public web action with no adobe auth", () => {
+  it("defines rules-delete action as a web action requiring adobe auth", () => {
     expect(actionsConfig).toBeDefined();
     expect(actionsConfig["rules-delete"]).toBeDefined();
     expect(actionsConfig["rules-delete"].web).toBe("yes");
     expect(
       actionsConfig["rules-delete"].annotations["require-adobe-auth"],
-    ).toBe(false);
+    ).toBe(true);
   });
 
-  it("defines rules-list action as a public web action with no adobe auth", () => {
+  it("defines rules-list action as a web action requiring adobe auth", () => {
     expect(actionsConfig).toBeDefined();
     expect(actionsConfig["rules-list"]).toBeDefined();
     expect(actionsConfig["rules-list"].web).toBe("yes");
     expect(actionsConfig["rules-list"].annotations["require-adobe-auth"]).toBe(
-      false,
+      true,
     );
   });
 
