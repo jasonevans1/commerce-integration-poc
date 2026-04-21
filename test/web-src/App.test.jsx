@@ -8,11 +8,6 @@ jest.mock(
 );
 
 jest.mock(
-  "../../src/commerce-backend-ui-1/web-src/src/components/HelloWorldPanel",
-  () => () => <div data-testid="hello-world-panel" />,
-);
-
-jest.mock(
   "../../src/commerce-backend-ui-1/web-src/src/components/CustomFeesConfig",
   () =>
     function CustomFeesConfig({ ims }) {
@@ -67,22 +62,10 @@ describe("App", () => {
     expect(onFn).toHaveBeenCalledWith("history", expect.any(Function));
   });
 
-  it("renders HelloWorldPanel at the /hello-world route", () => {
-    window.location.hash = "#/hello-world";
-    render(<App ims={mockIms} runtime={mockRuntime} />);
-    expect(screen.getByTestId("hello-world-panel")).toBeInTheDocument();
-  });
-
   it("renders CustomFeesConfig at the /custom-fees-config route", () => {
     window.location.hash = "#/custom-fees-config";
     render(<App ims={mockIms} runtime={mockRuntime} />);
     expect(screen.getByTestId("custom-fees-config")).toBeInTheDocument();
-  });
-
-  it("still renders HelloWorldPanel at the /hello-world route", () => {
-    window.location.hash = "#/hello-world";
-    render(<App ims={mockIms} runtime={mockRuntime} />);
-    expect(screen.getByTestId("hello-world-panel")).toBeInTheDocument();
   });
 
   it("still renders ExtensionRegistration at the index route", () => {
