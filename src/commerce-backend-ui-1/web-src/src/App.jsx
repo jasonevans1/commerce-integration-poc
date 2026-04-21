@@ -4,7 +4,6 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 
 import CustomFeesConfig from "./components/CustomFeesConfig.jsx";
 import ExtensionRegistration from "./components/ExtensionRegistration.jsx";
-import HelloWorldPanel from "./components/HelloWorldPanel.jsx";
 
 function App(props) {
   props.runtime.on("configuration", () => {
@@ -28,7 +27,6 @@ function App(props) {
               }
               index
             />
-            <Route element={<HelloWorldPanel />} path="/hello-world" />
             <Route
               element={<CustomFeesConfig ims={props.ims} />}
               path="/custom-fees-config"
