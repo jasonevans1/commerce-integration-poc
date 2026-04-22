@@ -43,3 +43,13 @@ rules-list:
   annotations:
     require-adobe-auth: true
     final: true
+webhook-quote-total:
+  function: webhook-quote-total/index.js
+  web: 'yes'
+  runtime: nodejs:22
+  require-adobe-auth: false
+  annotations:
+    require-adobe-auth: false
+    final: false
+  inputs:
+    LOG_LEVEL: debug

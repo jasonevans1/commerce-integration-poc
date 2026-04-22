@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!--
+  Commerce Webhook Registration for delivery-fee webhook-quote-total action.
+
+  IMPORTANT: This file is NOT auto-deployed by `aio app deploy`.
+  After deployment, register this webhook in Commerce Admin:
+  System > Webhooks > Add Webhook
+  Or use the Commerce REST API for webhook management.
+
+  Set WEBHOOK_QUOTE_TOTAL_URL to the deployed action URL from `aio app deploy` output.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_AdobeCommerceWebhooks:etc/webhooks.xsd">
+  <method name="plugin.magento.quote.api.cart_total_repository.get" type="after">
+    <hooks>
+      <batch name="delivery_fee_batch">
+        <hook name="delivery_fee_total"
+              url="{env:WEBHOOK_QUOTE_TOTAL_URL}"
+              timeout="5000"
+              softTimeout="2000"
+              required="false"
+              priority="100">
+          <fields>
+            <field name="quote.shipping_address.country_id" />
+            <field name="quote.shipping_address.region_code" />
+            <field name="quote.subtotal" />
+            <field name="quote.base_currency_code" />
+            <field name="totals.grand_total" />
+            <field name="totals.total_segments" />
+          </fields>
+        </hook>
+      </batch>
+    </hooks>
+  </method>
+</config>
