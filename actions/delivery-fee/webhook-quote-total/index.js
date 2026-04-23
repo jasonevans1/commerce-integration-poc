@@ -19,6 +19,9 @@ async function main(params) {
   try {
     const validation = validateData(params);
     if (!validation.success) {
+      if (validation.skip) {
+        return { statusCode: HTTP_OK, body: [] };
+      }
       return {
         statusCode: HTTP_BAD_REQUEST,
         body: { error: validation.message },

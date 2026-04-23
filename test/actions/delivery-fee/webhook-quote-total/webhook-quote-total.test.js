@@ -193,23 +193,33 @@ describe("Given delivery-fee webhook-quote-total action", () => {
     });
   });
 
-  describe("it returns 400 when quote shipping address is missing from payload", () => {
-    it("it returns 400 when quote shipping address is missing from payload", async () => {
+  describe("it returns 200 with empty patch array when quote shipping address is missing (pre-address checkout stage)", () => {
+    it("it returns 200 with empty patch array when quote shipping address is missing (pre-address checkout stage)", async () => {
       const params = {
         quote: { subtotal: SUBTOTAL },
         totals: { grand_total: GRAND_TOTAL },
       };
       const response = await action.main(params);
-      expect(response.statusCode).toBe(HTTP_BAD_REQUEST);
-      expect(response.body.error).toBeDefined();
+      expect(response.statusCode).toBe(HTTP_OK);
+      expect(response.body).toEqual([]);
     });
   });
 
-  describe("it returns 400 when country_id is missing from shipping address", () => {
-    it("it returns 400 when country_id is missing from shipping address", async () => {
+  describe("it returns 200 with empty patch array when country_id is missing from shipping address", () => {
+    it("it returns 200 with empty patch array when country_id is missing from shipping address", async () => {
       const params = makeParams();
       params.quote.shipping_address.country_id = undefined;
       const response = await action.main(params);
+      expect(response.statusCode).toBe(HTTP_OK);
+      expect(response.body).toEqual([]);
+    });
+  });
+
+  describe("it returns 400 when quote object is entirely absent from payload", () => {
+    it("it returns 400 when quote object is entirely absent from payload", async () => {
+      const response = await action.main({
+        totals: { grand_total: GRAND_TOTAL },
+      });
       expect(response.statusCode).toBe(HTTP_BAD_REQUEST);
       expect(response.body.error).toBeDefined();
     });
