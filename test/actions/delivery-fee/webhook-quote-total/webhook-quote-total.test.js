@@ -22,6 +22,12 @@ const EXPECTED_GRAND_TOTAL_WITH_FIXED_FEE = 164;
 const EXPECTED_GRAND_TOTAL_WITH_PERCENTAGE_FEE = 163.9;
 const GRAND_TOTAL = 149;
 const EXPECTED_PATCH_LENGTH = 2;
+const EXISTING_FEE_VALUE = 6;
+const EXPECTED_GRAND_TOTAL_AFTER_REMOVAL = 149;
+const EXPECTED_GRAND_TOTAL_REPLACE_FEE = 164;
+const EXPECTED_REMOVE_ADD_REPLACE_LENGTH = 3;
+const EXPECTED_REMOVE_ONLY_LENGTH = 2;
+const EXPECTED_TWO_REMOVES_LENGTH = 4;
 
 jest.mock("../../../../actions/delivery-fee/lib/state-service");
 const stateService = require("../../../../actions/delivery-fee/lib/state-service");
@@ -193,23 +199,33 @@ describe("Given delivery-fee webhook-quote-total action", () => {
     });
   });
 
-  describe("it returns 400 when quote shipping address is missing from payload", () => {
-    it("it returns 400 when quote shipping address is missing from payload", async () => {
+  describe("it returns 200 with empty patch array when quote shipping address is missing (pre-address checkout stage)", () => {
+    it("it returns 200 with empty patch array when quote shipping address is missing (pre-address checkout stage)", async () => {
       const params = {
         quote: { subtotal: SUBTOTAL },
         totals: { grand_total: GRAND_TOTAL },
       };
       const response = await action.main(params);
-      expect(response.statusCode).toBe(HTTP_BAD_REQUEST);
-      expect(response.body.error).toBeDefined();
+      expect(response.statusCode).toBe(HTTP_OK);
+      expect(response.body).toEqual([]);
     });
   });
 
-  describe("it returns 400 when country_id is missing from shipping address", () => {
-    it("it returns 400 when country_id is missing from shipping address", async () => {
+  describe("it returns 200 with empty patch array when country_id is missing from shipping address", () => {
+    it("it returns 200 with empty patch array when country_id is missing from shipping address", async () => {
       const params = makeParams();
       params.quote.shipping_address.country_id = undefined;
       const response = await action.main(params);
+      expect(response.statusCode).toBe(HTTP_OK);
+      expect(response.body).toEqual([]);
+    });
+  });
+
+  describe("it returns 400 when quote object is entirely absent from payload", () => {
+    it("it returns 400 when quote object is entirely absent from payload", async () => {
+      const response = await action.main({
+        totals: { grand_total: GRAND_TOTAL },
+      });
       expect(response.statusCode).toBe(HTTP_BAD_REQUEST);
       expect(response.body.error).toBeDefined();
     });
@@ -291,6 +307,133 @@ describe("Given delivery-fee webhook-quote-total action", () => {
       const response = await action.main(makeParams());
       expect(response.statusCode).toBe(HTTP_OK);
       expect(response.body[0].value.code).toBe("delivery_fee");
+    });
+  });
+
+  describe("it removes an existing delivery_fee segment when no rule matches the new address", () => {
+    it("it removes an existing delivery_fee segment when no rule matches the new address", async () => {
+      stateService.getRule.mockResolvedValue(null);
+      const params = makeParams({
+        totals: {
+          grand_total: GRAND_TOTAL + EXISTING_FEE_VALUE,
+          total_segments: [
+            { code: "subtotal", title: "Subtotal", value: SUBTOTAL },
+            {
+              code: "delivery_fee",
+              title: "Old Fee",
+              value: EXISTING_FEE_VALUE,
+            },
+          ],
+        },
+      });
+      const response = await action.main(params);
+      expect(response.statusCode).toBe(HTTP_OK);
+      expect(response.body).toHaveLength(EXPECTED_REMOVE_ONLY_LENGTH);
+      expect(response.body[0].op).toBe("remove");
+      expect(response.body[0].path).toBe("/totals/total_segments/1");
+      expect(response.body[1].op).toBe("replace");
+      expect(response.body[1].path).toBe("/totals/grand_total");
+      expect(response.body[1].value).toBe(EXPECTED_GRAND_TOTAL_AFTER_REMOVAL);
+    });
+  });
+
+  describe("it replaces an existing delivery_fee segment when a new matching rule is found", () => {
+    it("it replaces an existing delivery_fee segment when a new matching rule is found", async () => {
+      const rule = {
+        country: "US",
+        region: "CA",
+        name: "CA Delivery Fee",
+        type: "fixed",
+        value: FIXED_FEE_VALUE,
+      };
+      stateService.getRule.mockResolvedValue(rule);
+      const params = makeParams({
+        totals: {
+          grand_total: GRAND_TOTAL + EXISTING_FEE_VALUE,
+          total_segments: [
+            { code: "subtotal", title: "Subtotal", value: SUBTOTAL },
+            {
+              code: "delivery_fee",
+              title: "Old Fee",
+              value: EXISTING_FEE_VALUE,
+            },
+          ],
+        },
+      });
+      const response = await action.main(params);
+      expect(response.statusCode).toBe(HTTP_OK);
+      expect(response.body).toHaveLength(EXPECTED_REMOVE_ADD_REPLACE_LENGTH);
+      expect(response.body[0].op).toBe("remove");
+      expect(response.body[0].path).toBe("/totals/total_segments/1");
+      expect(response.body[1].op).toBe("add");
+      expect(response.body[2].op).toBe("replace");
+      expect(response.body[2].value).toBe(EXPECTED_GRAND_TOTAL_REPLACE_FEE);
+    });
+  });
+
+  describe("it removes all accumulated delivery_fee segments when multiple exist", () => {
+    it("it removes all accumulated delivery_fee segments when multiple exist", async () => {
+      const rule = {
+        country: "US",
+        region: "CA",
+        name: "CA Delivery Fee",
+        type: "fixed",
+        value: FIXED_FEE_VALUE,
+      };
+      stateService.getRule.mockResolvedValue(rule);
+      const params = makeParams({
+        totals: {
+          grand_total: GRAND_TOTAL + EXISTING_FEE_VALUE + EXISTING_FEE_VALUE,
+          total_segments: [
+            { code: "subtotal", title: "Subtotal", value: SUBTOTAL },
+            {
+              code: "delivery_fee",
+              title: "Old Fee 1",
+              value: EXISTING_FEE_VALUE,
+            },
+            {
+              code: "delivery_fee",
+              title: "Old Fee 2",
+              value: EXISTING_FEE_VALUE,
+            },
+          ],
+        },
+      });
+      const response = await action.main(params);
+      expect(response.statusCode).toBe(HTTP_OK);
+      expect(response.body).toHaveLength(EXPECTED_TWO_REMOVES_LENGTH);
+      expect(response.body[0].op).toBe("remove");
+      expect(response.body[1].op).toBe("remove");
+      expect(response.body[2].op).toBe("add");
+      expect(response.body[3].op).toBe("replace");
+    });
+  });
+
+  describe("it removes accumulated delivery_fee segments in reverse index order to preserve array integrity", () => {
+    it("it removes accumulated delivery_fee segments in reverse index order to preserve array integrity", async () => {
+      stateService.getRule.mockResolvedValue(null);
+      const params = makeParams({
+        totals: {
+          grand_total: GRAND_TOTAL + EXISTING_FEE_VALUE + EXISTING_FEE_VALUE,
+          total_segments: [
+            { code: "subtotal", title: "Subtotal", value: SUBTOTAL },
+            {
+              code: "delivery_fee",
+              title: "Old Fee 1",
+              value: EXISTING_FEE_VALUE,
+            },
+            {
+              code: "delivery_fee",
+              title: "Old Fee 2",
+              value: EXISTING_FEE_VALUE,
+            },
+          ],
+        },
+      });
+      const response = await action.main(params);
+      expect(response.statusCode).toBe(HTTP_OK);
+      expect(response.body[0].path).toBe("/totals/total_segments/2");
+      expect(response.body[1].path).toBe("/totals/total_segments/1");
     });
   });
 });

@@ -12,6 +12,7 @@ function validateData(params) {
   if (!params.quote.shipping_address) {
     return {
       success: false,
+      skip: true,
       message: "Missing required field: quote.shipping_address",
     };
   }
@@ -19,6 +20,7 @@ function validateData(params) {
   if (!params.quote.shipping_address.country_id) {
     return {
       success: false,
+      skip: true,
       message: "Missing required field: quote.shipping_address.country_id",
     };
   }
