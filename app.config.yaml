@@ -64,6 +64,10 @@ application:
         license: Apache-2.0
         actions:
           $include: ./actions/delivery-fee/actions.config.yaml
+      tax:
+        license: Apache-2.0
+        actions:
+          $include: ./actions/tax/actions.config.yaml
 extensions:
   commerce/backend-ui/1:
     $include: src/commerce-backend-ui-1/ext.config.yaml

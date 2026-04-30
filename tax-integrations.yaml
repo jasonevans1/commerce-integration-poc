@@ -1,0 +1,5 @@
+- code: flat-rate-tax
+  title: Flat Rate Tax
+  active: true
+  stores:
+    - default

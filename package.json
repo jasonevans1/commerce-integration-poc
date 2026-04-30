@@ -64,6 +64,7 @@
     "code:format:fix": "biome format --write --no-errors-on-unmatched",
     "code:lint:fix": "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true",
     "docs:format:fix": "prettier --write --no-error-on-unmatched-pattern '**/*.md' \"!**/{CODE_OF_CONDUCT.md,COPYRIGHT,LICENSE,SECURITY.md,CONTRIBUTING.md,COPILOT-INSTRUCTIONS.md}\"",
+    "create-tax-integrations": "node --no-warnings -e 'require(\"./scripts/create-tax-integrations.js\").main()'",
     "invoke": "bash ./scripts/test-action/invoke.sh"
   },
   "engines": {

@@ -1,0 +1,22 @@
+collect-taxes:
+  function: collect-taxes/index.js
+  web: 'yes'
+  runtime: nodejs:22
+  inputs:
+    LOG_LEVEL: debug
+    TAX_RATE_PERCENT: $TAX_RATE_PERCENT
+    COMMERCE_WEBHOOKS_PUBLIC_KEY: $COMMERCE_WEBHOOKS_PUBLIC_KEY
+  annotations:
+    require-adobe-auth: false
+    final: false
+collect-adjustment-taxes:
+  function: collect-adjustment-taxes/index.js
+  web: 'yes'
+  runtime: nodejs:22
+  inputs:
+    LOG_LEVEL: debug
+    TAX_RATE_PERCENT: $TAX_RATE_PERCENT
+    COMMERCE_WEBHOOKS_PUBLIC_KEY: $COMMERCE_WEBHOOKS_PUBLIC_KEY
+  annotations:
+    require-adobe-auth: false
+    final: false
