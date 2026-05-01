@@ -82,6 +82,8 @@ jobs:
           NOTIFICATION_EMAIL_TO: ${{ secrets.NOTIFICATION_EMAIL_TO }}
           EDS_STOREFRONT_URL: ${{ secrets.EDS_STOREFRONT_URL }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
+          TAX_RATE_PERCENT: ${{ secrets.TAX_RATE_PERCENT }}
+          COMMERCE_WEBHOOKS_PUBLIC_KEY: ${{ secrets.COMMERCE_WEBHOOKS_PUBLIC_KEY }}
         uses: adobe/aio-apps-action@4.0.0
         with:
           command: deploy
