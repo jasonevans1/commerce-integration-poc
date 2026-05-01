@@ -5,18 +5,36 @@ const HTTP_UNAUTHORIZED = 401;
 
 /**
  * Validates the Commerce webhook payload for the collect-taxes action.
+ * Supports both raw-http (body in __ow_body) and direct param injection modes.
  * Also verifies the webhook signature using COMMERCE_WEBHOOKS_PUBLIC_KEY when present.
  *
  * @param {object} params - Webhook payload parameters
  * @returns {{ success: boolean, message?: string, statusCode?: number }} Validation result
  */
 function validateData(params) {
-  if (!params.quote) {
-    return { success: false, message: "Missing required field: quote" };
+  let oopQuote;
+
+  if (params.__ow_body) {
+    try {
+      const decoded = Buffer.from(params.__ow_body, "base64").toString("utf8");
+      const body = JSON.parse(decoded);
+      oopQuote = body.oopQuote;
+    } catch (_error) {
+      return { success: false, message: "Invalid request body encoding" };
+    }
+  } else {
+    oopQuote = params.oopQuote;
   }
 
-  if (!params.quote.items) {
-    return { success: false, message: "Missing required field: quote.items" };
+  if (!oopQuote) {
+    return { success: false, message: "Missing required field: oopQuote" };
+  }
+
+  if (!oopQuote.items) {
+    return {
+      success: false,
+      message: "Missing required field: oopQuote.items",
+    };
   }
 
   const publicKey = params.COMMERCE_WEBHOOKS_PUBLIC_KEY;

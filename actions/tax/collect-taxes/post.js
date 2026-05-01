@@ -1,11 +1,11 @@
 /**
- * Assembles the final Commerce webhook response for the OOP tax module.
+ * Serializes the JSON Patch operations array as a string for the Commerce OOP tax module.
  *
- * @param {{ taxes: Array }} transformed - Transformed tax line items
- * @returns {{ taxes: Array }} Commerce-compatible tax response
+ * @param {Array} operations - Array of JSON Patch operations from transformData
+ * @returns {string} JSON-serialized operations array
  */
-function postProcess(transformed) {
-  return transformed;
+function postProcess(operations) {
+  return JSON.stringify(operations);
 }
 
 module.exports = {

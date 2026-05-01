@@ -9,6 +9,7 @@ collect-taxes:
   annotations:
     require-adobe-auth: false
     final: false
+    raw-http: true
 collect-adjustment-taxes:
   function: collect-adjustment-taxes/index.js
   web: 'yes'
@@ -20,3 +21,4 @@ collect-adjustment-taxes:
   annotations:
     require-adobe-auth: false
     final: false
+    raw-http: true

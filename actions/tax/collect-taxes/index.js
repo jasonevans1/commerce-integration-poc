@@ -13,7 +13,7 @@ const HTTP_UNAUTHORIZED = 401;
  * Commerce synchronous webhook handler for OOP tax collection.
  * Applies a configurable flat-rate tax percentage to taxable line items.
  *
- * @param {object} params - Commerce webhook payload
+ * @param {object} params - Commerce webhook payload (raw-http: true, body in __ow_body)
  * @returns {object} HTTP response with statusCode and body
  */
 async function main(params) {

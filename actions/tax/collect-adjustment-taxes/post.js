@@ -1,12 +1,11 @@
 /**
- * Assembles the final Commerce webhook response for the OOP tax adjustment module.
- * For flat-rate POC, passes through the zero-adjustment shape: { taxes: [] }.
+ * Serializes the operations array as a JSON string for the Commerce OOP tax module.
  *
- * @param {{ taxes: Array }} transformed - Transformed tax adjustment data
- * @returns {{ taxes: Array }} Commerce-compatible adjustment tax response
+ * @param {Array} operations - Array of JSON Patch operations from transformData
+ * @returns {string} JSON-serialized operations array
  */
-function postProcess(transformed) {
-  return transformed;
+function postProcess(operations) {
+  return JSON.stringify(operations);
 }
 
 module.exports = {

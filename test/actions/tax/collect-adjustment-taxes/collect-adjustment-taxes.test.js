@@ -17,10 +17,10 @@ const HTTP_BAD_REQUEST = 400;
 const HTTP_INTERNAL_ERROR = 500;
 const HTTP_UNAUTHORIZED = 401;
 const TAX_RATE_PERCENT_STRING = "8.5";
-const ROW_TOTAL_ITEM_1 = 100;
-const ITEM_ID_1 = 1;
+const UNIT_PRICE_ITEM_1 = 100;
+const ITEM_CODE_1 = "item_1";
+const ITEM_QUANTITY = 1;
 const RSA_KEY_BITS = 2048;
-const TAX_CLASS_ID = 2;
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -126,13 +126,14 @@ describe("Given tax collect-adjustment-taxes scaffold", () => {
 
 describe("Given tax collect-adjustment-taxes action", () => {
   const makeParams = (overrides = {}) => ({
-    quote: {
+    oopQuote: {
       items: [
         {
-          item_id: ITEM_ID_1,
+          code: ITEM_CODE_1,
           name: "Product A",
-          row_total: ROW_TOTAL_ITEM_1,
-          tax_class_id: TAX_CLASS_ID,
+          unit_price: UNIT_PRICE_ITEM_1,
+          quantity: ITEM_QUANTITY,
+          tax_class: "Taxable Goods",
         },
       ],
     },
@@ -145,8 +146,8 @@ describe("Given tax collect-adjustment-taxes action", () => {
       const action = require(path.join(ACTION_DIR, "index.js"));
       const response = await action.main(makeParams());
       expect(response.statusCode).toBe(HTTP_OK);
-      expect(response.body).toHaveProperty("taxes");
-      expect(Array.isArray(response.body.taxes)).toBe(true);
+      const ops = JSON.parse(response.body);
+      expect(Array.isArray(ops)).toBe(true);
     });
   });
 
@@ -155,7 +156,8 @@ describe("Given tax collect-adjustment-taxes action", () => {
       const action = require(path.join(ACTION_DIR, "index.js"));
       const response = await action.main(makeParams());
       expect(response.statusCode).toBe(HTTP_OK);
-      expect(response.body.taxes).toEqual([]);
+      const ops = JSON.parse(response.body);
+      expect(ops).toEqual([]);
     });
   });
 
@@ -197,13 +199,14 @@ describe("Given tax collect-adjustment-taxes action", () => {
     it("it preProcess extracts the expected fields from the raw payload", () => {
       const { preProcess } = require(path.join(ACTION_DIR, "pre.js"));
       const params = {
-        quote: {
+        oopQuote: {
           items: [
             {
-              item_id: ITEM_ID_1,
+              code: ITEM_CODE_1,
               name: "Product A",
-              row_total: ROW_TOTAL_ITEM_1,
-              tax_class_id: TAX_CLASS_ID,
+              unit_price: UNIT_PRICE_ITEM_1,
+              quantity: ITEM_QUANTITY,
+              tax_class: "Taxable Goods",
             },
           ],
         },
@@ -211,7 +214,7 @@ describe("Given tax collect-adjustment-taxes action", () => {
       };
       const result = preProcess(params);
       expect(result).toHaveProperty("items");
-      expect(result.items).toEqual(params.quote.items);
+      expect(result.items).toEqual(params.oopQuote.items);
     });
   });
 });
@@ -223,19 +226,22 @@ describe("Given tax collect-adjustment-taxes signature verification", () => {
     privateKeyEncoding: { type: "pkcs8", format: "pem" },
   });
 
-  const makeBody = () =>
+  const makeRawBody = () =>
     JSON.stringify({
-      quote: {
+      oopQuote: {
         items: [
           {
-            item_id: ITEM_ID_1,
+            code: ITEM_CODE_1,
             name: "Product A",
-            row_total: ROW_TOTAL_ITEM_1,
-            tax_class_id: TAX_CLASS_ID,
+            unit_price: UNIT_PRICE_ITEM_1,
+            quantity: ITEM_QUANTITY,
+            tax_class: "Taxable Goods",
           },
         ],
       },
     });
+
+  const makeBase64Body = () => Buffer.from(makeRawBody()).toString("base64");
 
   const signBody = (body) => {
     const sign = crypto.createSign("SHA256");
@@ -248,13 +254,14 @@ describe("Given tax collect-adjustment-taxes signature verification", () => {
     it("it skips signature verification when COMMERCE_WEBHOOKS_PUBLIC_KEY is not set", async () => {
       const action = require(path.join(ACTION_DIR, "index.js"));
       const params = {
-        quote: {
+        oopQuote: {
           items: [
             {
-              item_id: ITEM_ID_1,
+              code: ITEM_CODE_1,
               name: "Product A",
-              row_total: ROW_TOTAL_ITEM_1,
-              tax_class_id: TAX_CLASS_ID,
+              unit_price: UNIT_PRICE_ITEM_1,
+              quantity: ITEM_QUANTITY,
+              tax_class: "Taxable Goods",
             },
           ],
         },
@@ -270,22 +277,12 @@ describe("Given tax collect-adjustment-taxes signature verification", () => {
     it("it returns 401 when COMMERCE_WEBHOOKS_PUBLIC_KEY is set and the signature is invalid", async () => {
       const action = require(path.join(ACTION_DIR, "index.js"));
       const params = {
-        quote: {
-          items: [
-            {
-              item_id: ITEM_ID_1,
-              name: "Product A",
-              row_total: ROW_TOTAL_ITEM_1,
-              tax_class_id: TAX_CLASS_ID,
-            },
-          ],
-        },
         TAX_RATE_PERCENT: TAX_RATE_PERCENT_STRING,
         COMMERCE_WEBHOOKS_PUBLIC_KEY: publicKey,
         __ow_headers: {
           "x-adobe-commerce-webhook-signature": "invalidsignature",
         },
-        __ow_body: makeBody(),
+        __ow_body: makeBase64Body(),
       };
       const response = await action.main(params);
       expect(response.statusCode).toBe(HTTP_UNAUTHORIZED);
@@ -295,25 +292,15 @@ describe("Given tax collect-adjustment-taxes signature verification", () => {
   describe("it accepts the request when COMMERCE_WEBHOOKS_PUBLIC_KEY is set and the signature is valid", () => {
     it("it accepts the request when COMMERCE_WEBHOOKS_PUBLIC_KEY is set and the signature is valid", async () => {
       const action = require(path.join(ACTION_DIR, "index.js"));
-      const body = makeBody();
-      const signature = signBody(body);
+      const base64Body = makeBase64Body();
+      const signature = signBody(base64Body);
       const params = {
-        quote: {
-          items: [
-            {
-              item_id: ITEM_ID_1,
-              name: "Product A",
-              row_total: ROW_TOTAL_ITEM_1,
-              tax_class_id: TAX_CLASS_ID,
-            },
-          ],
-        },
         TAX_RATE_PERCENT: TAX_RATE_PERCENT_STRING,
         COMMERCE_WEBHOOKS_PUBLIC_KEY: publicKey,
         __ow_headers: {
           "x-adobe-commerce-webhook-signature": signature,
         },
-        __ow_body: body,
+        __ow_body: base64Body,
       };
       const response = await action.main(params);
       expect(response.statusCode).toBe(HTTP_OK);

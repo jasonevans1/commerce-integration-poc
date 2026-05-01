@@ -1,13 +1,13 @@
 /**
- * Returns a zero-adjustment tax response for the flat-rate POC use case.
- * Tax adjustments (e.g., after order cancellation or partial refund) result
- * in no additional taxes — Commerce will handle credit memo tax calculations.
+ * Returns an empty operations array for the adjustment tax use case.
+ * For the flat-rate POC, credit memo tax adjustments are not recalculated
+ * out-of-process — Commerce handles this internally.
  *
- * @param {object} _normalized - Normalized webhook parameters (unused for flat rate)
- * @returns {{ taxes: Array }} Zero-adjustment tax response
+ * @param {object} _normalized - Normalized webhook parameters (unused)
+ * @returns {Array} Empty operations array
  */
 function transformData(_normalized) {
-  return { taxes: [] };
+  return [];
 }
 
 module.exports = {
