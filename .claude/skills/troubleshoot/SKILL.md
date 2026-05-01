@@ -37,7 +37,32 @@ node --version
 npm install
 
 # 5. Test build without deploying
-npm run build
+aio app build
+```
+
+### Common Error: "No actions deployed" Despite Code Changes
+
+**Cause** — webpack content hashing skips redeployment when it thinks nothing changed. The build runs and zip files are produced, but the deploy step is a no-op.
+
+**Fix** — force-update the action directly using the built zip:
+
+```bash
+# 1. Build to produce fresh zips
+aio app build
+
+# 2. Update the action directly (bypasses deploy cache)
+aio rt action update <namespace>/<action-name> \
+  dist/application/actions/<namespace>/<action-name>.zip \
+  --kind nodejs:22
+
+# 3. Update annotations if needed
+aio rt action update <namespace>/<action-name> \
+  --annotation raw-http true \
+  --annotation final false \
+  --annotation require-adobe-auth false
+
+# 4. Verify version incremented
+aio rt action get <namespace>/<action-name> 2>&1 | grep version
 ```
 
 ### Common Error: Module Not Found
@@ -274,6 +299,100 @@ Event names MUST include the type prefix.
 
 // ✅ Valid
 { "name": "observer.catalog_product_save_commit_after" }
+```
+
+---
+
+## Commerce Webhook (OOP Tax) Troubleshooting
+
+### Symptom: "Internal server error" on `addProductsToCart` When Tax Webhook Is Enabled
+
+**Diagnosis** — Disable the `collect_taxes` webhook in Commerce Admin (Stores > Configuration > General > Web Hooks). If `addProductsToCart` succeeds with the webhook disabled, the webhook action is returning an unparseable response.
+
+**Root cause** — The Commerce OOP tax module (`module-out-of-process-tax-management`) requires a **JSON Patch operations array**, NOT a `{taxes:[...]}` shape. Returning the wrong format causes Commerce to emit a generic "Internal server error" with no other clue.
+
+**Correct response format:**
+
+```json
+[
+  {
+    "op": "add",
+    "path": "oopQuote/items/0/tax_breakdown",
+    "value": {
+      "data": {
+        "code": "flat-rate-tax",
+        "rate": 10,
+        "amount": 100,
+        "title": "Flat Rate Tax",
+        "tax_rate_key": "flat-rate-tax-10"
+      }
+    },
+    "instance": "Magento\\OutOfProcessTaxManagement\\Api\\Data\\OopQuoteItemTaxBreakdownInterface"
+  },
+  {
+    "op": "replace",
+    "path": "oopQuote/items/0/tax",
+    "value": {
+      "data": { "rate": 10, "amount": 100, "discount_compensation_amount": 0 }
+    },
+    "instance": "Magento\\OutOfProcessTaxManagement\\Api\\Data\\OopQuoteItemTaxInterface"
+  }
+]
+```
+
+Each item needs two operations: `add` for `tax_breakdown` and `replace` for `tax`. The action body must be `JSON.stringify(operations)` (a string, not an object).
+
+**Reference** — `actions/tax/collect-taxes/transformer.js` is the canonical implementation.
+
+---
+
+### Symptom: Tax Webhook Action Receives Empty / Mangled Params
+
+**Cause** — Missing `raw-http: true` annotation. Commerce sends webhook bodies as raw HTTP. Without `raw-http: true`, OpenWhisk tries to merge the JSON body into params, which can produce unexpected behavior. With `raw-http: true`, the body arrives in `params.__ow_body` as a **base64-encoded string**.
+
+**Fix** — add to `actions.config.yaml`:
+
+```yaml
+collect-taxes:
+  annotations:
+    raw-http: true
+    require-adobe-auth: false
+    final: false
+```
+
+Update `validator.js` and `pre.js` to decode the body:
+
+```javascript
+if (params.__ow_body) {
+  const decoded = Buffer.from(params.__ow_body, "base64").toString("utf8");
+  const body = JSON.parse(decoded);
+  oopQuote = body.oopQuote;
+} else {
+  oopQuote = params.oopQuote; // fallback for direct test invocations
+}
+```
+
+**Note on signature verification** — the validator must verify the signature against `params.__ow_body` (the base64 string), not the decoded JSON. In tests, pass `__ow_body` as `Buffer.from(json).toString("base64")` and sign that base64 string.
+
+---
+
+### Symptom: Tax Action Rejects Params with "Request defines parameters that are not allowed"
+
+**Cause** — `final: true` is set on the deployed action. This prevents stored params from being overridden by callers. Despite `final: false` in `actions.config.yaml`, a previously deployed action may retain `final: true`.
+
+**Fix:**
+
+```bash
+aio rt action update tax/collect-taxes \
+  --annotation final false \
+  --annotation require-adobe-auth false \
+  --annotation raw-http true
+```
+
+Verify:
+
+```bash
+aio rt action get tax/collect-taxes 2>&1 | grep -A2 "final"
 ```
 
 ---
