@@ -30,8 +30,8 @@ function readTaxIntegrations() {
  * @returns {Promise<void>}
  */
 async function postTaxIntegration(baseUrl, authHeaders, integration) {
-  const { code, ...payload } = integration;
-  const url = `${baseUrl}${TAX_INTEGRATION_API_PATH}/${code}`;
+  const { code } = integration;
+  const url = `${baseUrl}${TAX_INTEGRATION_API_PATH}`;
 
   const response = await fetch(url, {
     method: "POST",
@@ -39,7 +39,7 @@ async function postTaxIntegration(baseUrl, authHeaders, integration) {
       "Content-Type": "application/json",
       ...authHeaders,
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ tax_integration: integration }),
   });
 
   if (!response.ok) {

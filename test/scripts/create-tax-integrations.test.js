@@ -132,7 +132,7 @@ describe("create-tax-integrations", () => {
       expect(fetchOptions.headers.Authorization).toMatch(BEARER_TOKEN_REGEX);
     });
 
-    it("POSTs to /V1/oope_tax_management/tax_integration/:code for each tax integration entry", async () => {
+    it("POSTs to /V1/oope_tax_management/tax_integration with tax_integration wrapper for each entry", async () => {
       jest.replaceProperty(process, "env", {
         COMMERCE_BASE_URL: "https://commerce.test/",
         OAUTH_CLIENT_ID: "test-client-id",
@@ -151,11 +151,12 @@ describe("create-tax-integrations", () => {
       await createTaxIntegrations.main();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "V1/oope_tax_management/tax_integration/flat-rate-tax",
-        ),
+        "https://commerce.test/V1/oope_tax_management/tax_integration",
         expect.objectContaining({ method: "POST" }),
       );
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.tax_integration).toBeDefined();
+      expect(body.tax_integration.code).toBe("flat-rate-tax");
     });
 
     it("logs success message with integration codes on successful creation", async () => {
