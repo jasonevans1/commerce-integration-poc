@@ -1,14 +1,15 @@
-/**
- * No-op sender for the collect-taxes webhook action.
- * Flat-rate tax requires no external service call.
- *
- * @param {object} _normalized - Normalized webhook parameters (unused)
- * @returns {Promise<null>} Always resolves to null
- */
-async function sendData(_normalized) {
-  return await Promise.resolve(null);
+const { getRule } = require("../../delivery-fee/lib/state-service");
+
+async function sendData(normalized) {
+  const { country, region } = normalized;
+  if (!country) {
+    return null;
+  }
+  try {
+    return await getRule(country, region);
+  } catch (_error) {
+    return null;
+  }
 }
 
-module.exports = {
-  sendData,
-};
+module.exports = { sendData };

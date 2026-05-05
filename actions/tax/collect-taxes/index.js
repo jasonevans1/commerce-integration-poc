@@ -31,8 +31,8 @@ async function main(params) {
     }
 
     const normalized = preProcess(params);
-    await sendData(normalized);
-    const transformed = transformData(normalized);
+    const rule = await sendData(normalized);
+    const transformed = transformData(normalized, rule);
     const body = postProcess(transformed);
 
     return { statusCode: HTTP_OK, body };
