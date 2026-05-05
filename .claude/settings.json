@@ -4,5 +4,31 @@
   },
   "enabledPlugins": {
     "ralph-wiggum@claude-code-plugins": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(playwright-cli snapshot *)",
+      "Bash(playwright-cli goto *)",
+      "Bash(playwright-cli screenshot *)",
+      "Bash(playwright-cli tab-select *)",
+      "Bash(playwright-cli open *)",
+      "Bash(playwright-cli reload *)",
+      "Bash(playwright-cli network *)",
+      "Bash(npm test)",
+      "Bash(npm test *)",
+      "Bash(aio runtime activation list *)",
+      "Bash(aio rt activation list *)",
+      "Bash(aio rt action get *)",
+      "Bash(aio runtime action get *)",
+      "Bash(aio runtime action list *)",
+      "Bash(aio rt activation get *)",
+      "Bash(aio runtime activation get *)",
+      "Bash(aio rt activation logs *)",
+      "Bash(aio runtime activation logs *)",
+      "Bash(aio config get *)",
+      "Bash(aio app get-url *)",
+      "Bash(aio app logs *)",
+      "mcp__commerce-extensibility__search-commerce-docs"
+    ]
   }
 }
